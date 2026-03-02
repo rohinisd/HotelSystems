@@ -35,10 +35,15 @@ class Settings(BaseSettings):
 
     @property
     def cors_origin_list(self) -> list[str]:
+        raw = self.cors_origins.strip()
         try:
-            return json.loads(self.cors_origins)
+            parsed = json.loads(raw)
+            if isinstance(parsed, list):
+                return [str(o).strip() for o in parsed]
         except (json.JSONDecodeError, TypeError):
-            return [self.cors_origins] if self.cors_origins else []
+            pass
+        cleaned = raw.strip("[]")
+        return [o.strip().strip('"').strip("'") for o in cleaned.split(",") if o.strip()]
 
     model_config = {
         "env_file": ".env",
