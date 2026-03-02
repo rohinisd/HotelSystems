@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from sfms.config import get_settings
 from sfms.middleware.tenant import TenantMiddleware
-from sfms.routers import auth, bookings, courts, dashboard, facilities, health
+from sfms.routers import auth, bookings, courts, dashboard, facilities, health, payments
 from sfms.utils.logger import setup_logging
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger(__name__)
@@ -38,6 +38,7 @@ def create_app() -> FastAPI:
     app.include_router(facilities.router, prefix="/api/v1")
     app.include_router(courts.router, prefix="/api/v1")
     app.include_router(bookings.router, prefix="/api/v1")
+    app.include_router(payments.router, prefix="/api/v1")
     app.include_router(dashboard.router, prefix="/api/v1")
 
     @app.on_event("startup")

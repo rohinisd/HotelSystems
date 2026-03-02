@@ -128,6 +128,14 @@ export interface RevenueTrend {
   bookings: number;
 }
 
+export interface PaymentOrder {
+  order_id: string;
+  amount: number;
+  currency: string;
+  key_id: string;
+  booking_id: number;
+}
+
 export interface UtilizationData {
   court_name: string;
   sport: string;
@@ -209,6 +217,19 @@ export const api = {
     request<ScheduleItem[]>(
       `/api/v1/bookings/schedule${date ? `?date=${date}` : ""}`,
     ),
+
+  // Payments
+  createPaymentOrder: (bookingId: number) =>
+    request<PaymentOrder>(`/api/v1/payments/order/${bookingId}`, { method: "POST" }),
+
+  verifyPayment: (data: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) =>
+    request<{ status: string }>("/api/v1/payments/verify", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  recordCashPayment: (bookingId: number) =>
+    request<{ status: string }>(`/api/v1/payments/cash/${bookingId}`, { method: "POST" }),
 
   // Dashboard
   getDashboardKPIs: () => request<DashboardKPI[]>("/api/v1/dashboard/kpis"),
