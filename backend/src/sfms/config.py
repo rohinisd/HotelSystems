@@ -12,6 +12,17 @@ class Settings(BaseSettings):
 
     database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/sfms"
 
+    @property
+    def async_database_url(self) -> str:
+        url = self.database_url
+        if url.startswith("postgres://"):
+            url = url.replace("postgres://", "postgresql+asyncpg://", 1)
+        elif url.startswith("postgresql://") and "+asyncpg" not in url:
+            url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        if "sslmode=" in url:
+            url = url.split("?")[0]
+        return url
+
     jwt_secret: str = "CHANGE_ME"
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = 60

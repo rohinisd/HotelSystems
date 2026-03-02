@@ -20,8 +20,8 @@ def create_app() -> FastAPI:
         title="SFMS API",
         description="Sports Facility Management System",
         version="0.1.0",
-        docs_url="/api/docs" if settings.debug else None,
-        redoc_url="/api/redoc" if settings.debug else None,
+        docs_url="/api/docs",
+        redoc_url="/api/redoc",
     )
 
     app.add_middleware(
