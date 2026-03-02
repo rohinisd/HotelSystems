@@ -33,9 +33,11 @@ export function Sidebar({ className }: { className?: string }) {
 
   return (
     <div className={cn("flex w-64 flex-col bg-slate-900 text-white", className)}>
-      <div className="flex h-16 items-center gap-2 px-6 border-b border-slate-700">
-        <Trophy className="h-7 w-7 text-emerald-400" />
-        <span className="text-lg font-bold">SFMS</span>
+      <div className="flex h-16 items-center gap-2.5 px-6 border-b border-slate-700">
+        <div className="h-8 w-8 rounded-lg bg-emerald-500 flex items-center justify-center font-bold text-xs tracking-tight">
+          TS
+        </div>
+        <span className="text-lg font-bold tracking-tight">TurfStack</span>
       </div>
 
       <nav className="flex-1 space-y-1 px-3 py-4">

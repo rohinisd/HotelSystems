@@ -5,8 +5,10 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "SFMS - Sports Facility Management",
-  description: "Book courts, manage facilities, track revenue",
+  title: "TurfStack - Book Courts, Manage Facilities",
+  description:
+    "India's smartest sports facility platform. Book pickleball, cricket, badminton courts instantly. Manage bookings, revenue & utilization.",
+  icons: { icon: "/favicon.ico" },
 };
 
 export default function RootLayout({

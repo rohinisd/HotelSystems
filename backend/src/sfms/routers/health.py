@@ -11,7 +11,7 @@ router = APIRouter(prefix="/health", tags=["Health"])
 
 @router.get("")
 async def health():
-    return {"status": "healthy", "service": "sfms-api"}
+    return {"status": "healthy", "service": "turfstack-api"}
 
 
 @router.get("/db")

@@ -20,8 +20,8 @@ def create_app() -> FastAPI:
     setup_logging(app_env=settings.app_env)
 
     app = FastAPI(
-        title="SFMS API",
-        description="Sports Facility Management System",
+        title="TurfStack API",
+        description="Sports Facility Management Platform",
         version="0.1.0",
         docs_url="/api/docs",
         redoc_url="/api/redoc",
