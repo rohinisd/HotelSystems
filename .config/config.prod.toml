@@ -1,0 +1,16 @@
+[app]
+name = "sfms"
+debug = false
+port = 8001
+log_level = "INFO"
+
+[database]
+pool_size = 20
+max_overflow = 30
+echo = false
+
+[auth]
+jwt_expire_minutes = 30
+
+[cors]
+origins = []

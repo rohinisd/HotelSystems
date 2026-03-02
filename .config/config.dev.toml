@@ -1,0 +1,16 @@
+[app]
+name = "sfms"
+debug = true
+port = 8001
+log_level = "DEBUG"
+
+[database]
+pool_size = 5
+max_overflow = 10
+echo = true
+
+[auth]
+jwt_expire_minutes = 60
+
+[cors]
+origins = ["http://localhost:3000"]
