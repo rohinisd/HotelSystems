@@ -21,6 +21,9 @@ out/
 .env.dev
 .env.prod
 
+# Test credentials (sensitive)
+TEST_CREDENTIALS.md
+
 # Docker
 postgres_data/
 
