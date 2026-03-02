@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import traceback
+
 import structlog
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from sfms.config import get_settings
 from sfms.middleware.tenant import TenantMiddleware
@@ -23,6 +26,11 @@ def create_app() -> FastAPI:
         docs_url="/api/docs",
         redoc_url="/api/redoc",
     )
+
+    @app.exception_handler(Exception)
+    async def unhandled_exception_handler(request: Request, exc: Exception):
+        logger.error("unhandled_error", path=request.url.path, error=str(exc), tb=traceback.format_exc())
+        return JSONResponse(status_code=500, content={"detail": str(exc)})
 
     app.add_middleware(
         CORSMiddleware,
