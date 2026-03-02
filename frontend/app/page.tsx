@@ -19,16 +19,16 @@ export default function Home() {
 
         <div className="flex gap-4 justify-center">
           <Link
-            href="/login"
+            href="/book"
             className="rounded-lg bg-emerald-600 px-6 py-3 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 transition-colors"
           >
-            Sign In
+            Book a Court
           </Link>
           <Link
-            href="/dashboard"
+            href="/login"
             className="rounded-lg border border-slate-300 bg-white px-6 py-3 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 transition-colors"
           >
-            Dashboard
+            Sign In
           </Link>
         </div>
       </div>

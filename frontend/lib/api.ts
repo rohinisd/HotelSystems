@@ -84,11 +84,55 @@ export interface Court {
   is_active: boolean;
 }
 
+export interface Slot {
+  start_time: string;
+  end_time: string;
+  is_available: boolean;
+  court_id: number;
+  price: number;
+}
+
+export interface BookingItem {
+  id: number;
+  facility_id: number;
+  court_id: number;
+  court_name: string;
+  branch_name: string;
+  date: string;
+  start_time: string;
+  end_time: string;
+  status: string;
+  booking_type: string;
+  player_name: string | null;
+  player_phone: string | null;
+  amount: number;
+  notes: string | null;
+  created_at: string;
+}
+
+export interface ScheduleItem extends BookingItem {
+  sport: string;
+  player_full_name: string | null;
+}
+
 export interface DashboardKPI {
   label: string;
   value: string;
   change_pct: number;
   period: string;
+}
+
+export interface RevenueTrend {
+  date: string;
+  revenue: number;
+  bookings: number;
+}
+
+export interface UtilizationData {
+  court_name: string;
+  sport: string;
+  total_bookings: number;
+  total_revenue: number;
 }
 
 // --- API Client ---
@@ -128,6 +172,52 @@ export const api = {
       `/api/v1/courts${branchId ? `?branch_id=${branchId}` : ""}`,
     ),
 
-  // Dashboard (Phase 4)
+  // Bookings
+  getSlots: (courtId: number, date: string) =>
+    request<Slot[]>(`/api/v1/bookings/slots?court_id=${courtId}&date=${date}`),
+
+  createBooking: (data: {
+    court_id: number;
+    date: string;
+    start_time: string;
+    end_time: string;
+    booking_type: string;
+    player_name?: string;
+    player_phone?: string;
+    notes?: string;
+  }) =>
+    request<{ id: number; status: string; amount: number }>(
+      "/api/v1/bookings",
+      { method: "POST", body: JSON.stringify(data) },
+    ),
+
+  getBookings: (params?: { date?: string; court_id?: number; status?: string }) => {
+    const qs = new URLSearchParams();
+    if (params?.date) qs.set("date", params.date);
+    if (params?.court_id) qs.set("court_id", String(params.court_id));
+    if (params?.status) qs.set("status", params.status);
+    const q = qs.toString();
+    return request<BookingItem[]>(`/api/v1/bookings${q ? `?${q}` : ""}`);
+  },
+
+  cancelBooking: (id: number) =>
+    request<{ id: number; status: string }>(`/api/v1/bookings/${id}/cancel`, {
+      method: "PATCH",
+    }),
+
+  getSchedule: (date?: string) =>
+    request<ScheduleItem[]>(
+      `/api/v1/bookings/schedule${date ? `?date=${date}` : ""}`,
+    ),
+
+  // Dashboard
   getDashboardKPIs: () => request<DashboardKPI[]>("/api/v1/dashboard/kpis"),
+
+  getRevenueTrend: (days?: number) =>
+    request<RevenueTrend[]>(
+      `/api/v1/dashboard/revenue-trend${days ? `?days=${days}` : ""}`,
+    ),
+
+  getUtilization: () =>
+    request<UtilizationData[]>("/api/v1/dashboard/utilization"),
 };
