@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: sfms_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: testpassword
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+        working-directory: backend
+
+      - name: Lint (ruff)
+        run: ruff check src/
+        working-directory: backend
+
+      - name: Format check (ruff)
+        run: ruff format --check src/
+        working-directory: backend
+
+      - name: Type check (mypy)
+        run: mypy src/sfms/ --ignore-missing-imports
+        working-directory: backend
+
+      - name: Security scan (bandit)
+        run: bandit -r src/ -c pyproject.toml -q
+        working-directory: backend
+
+      - name: Run tests
+        run: pytest tests/ -v --tb=short
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql+asyncpg://postgres:testpassword@localhost:5432/sfms_test
+          JWT_SECRET: ci-test-secret-key-32bytes-long!!
+          RAZORPAY_KEY_ID: rzp_test_fake
+          RAZORPAY_KEY_SECRET: fake_secret
+          APP_ENV: test
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: Lint
+        run: npm run lint
+        working-directory: frontend
+
+      - name: Build
+        run: npm run build
+        working-directory: frontend
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8001
