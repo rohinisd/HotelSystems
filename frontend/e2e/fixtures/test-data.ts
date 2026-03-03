@@ -8,9 +8,9 @@ export const BRANCHES = ["Gachibowli", "Madhapur"] as const;
 export const SPORTS = ["Pickleball", "Cricket", "Volleyball", "Badminton"] as const;
 
 export const SIDEBAR_ITEMS: Record<string, string[]> = {
-  owner: ["Overview", "Schedule", "Bookings", "Courts", "Revenue", "Team", "Branches", "Settings"],
-  manager: ["Overview", "Schedule", "Bookings", "Courts", "Revenue", "Settings"],
-  staff: ["Schedule", "Bookings", "Walk-in Booking"],
+  owner: ["Overview", "Schedule", "Bookings", "Courts", "Equipment", "Revenue", "Team", "Branches", "Settings"],
+  manager: ["Overview", "Schedule", "Bookings", "Courts", "Equipment", "Revenue", "Settings"],
+  staff: ["Schedule", "Bookings", "Walk-in Booking", "Equipment"],
   accountant: ["Revenue"],
   player: ["Book a Court", "My Bookings"],
 };

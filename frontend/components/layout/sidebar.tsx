@@ -8,6 +8,7 @@ import {
   CalendarPlus,
   CalendarClock,
   Trophy,
+  Package,
   BarChart3,
   Settings,
   LogOut,
@@ -67,6 +68,12 @@ const navItems: NavItem[] = [
     href: "/dashboard/courts",
     icon: Trophy,
     roles: ["owner", "manager"],
+  },
+  {
+    label: "Equipment",
+    href: "/dashboard/equipment",
+    icon: Package,
+    roles: ["owner", "manager", "staff"],
   },
   {
     label: "Revenue",

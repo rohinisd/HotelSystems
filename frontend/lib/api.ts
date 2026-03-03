@@ -192,6 +192,25 @@ export interface PricingRule {
   is_active: boolean;
 }
 
+export interface Equipment {
+  id: number;
+  facility_id: number;
+  branch_id: number | null;
+  name: string;
+  category: string;
+  brand: string | null;
+  total_quantity: number;
+  available_quantity: number;
+  condition: string;
+  rental_rate: number | null;
+  is_rentable: boolean;
+  notes: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  branch_name: string | null;
+}
+
 // --- API Client ---
 
 export const api = {
@@ -389,4 +408,52 @@ export const api = {
     request<HourlyUtilization[]>(
       `/api/v1/dashboard/utilization/hourly${days ? `?days=${days}` : ""}`,
     ),
+
+  // Equipment
+  getEquipment: (params?: { branch_id?: number; category?: string; is_rentable?: boolean; condition?: string; limit?: number; offset?: number }) => {
+    const qs = new URLSearchParams();
+    if (params?.branch_id) qs.set("branch_id", String(params.branch_id));
+    if (params?.category) qs.set("category", params.category);
+    if (params?.is_rentable !== undefined) qs.set("is_rentable", String(params.is_rentable));
+    if (params?.condition) qs.set("condition", params.condition);
+    if (params?.limit) qs.set("limit", String(params.limit));
+    if (params?.offset) qs.set("offset", String(params.offset));
+    const q = qs.toString();
+    return request<{ items: Equipment[]; total: number }>(`/api/v1/equipment${q ? `?${q}` : ""}`);
+  },
+
+  getEquipmentCategories: () =>
+    request<string[]>("/api/v1/equipment/categories"),
+
+  createEquipment: (data: {
+    branch_id?: number;
+    name: string;
+    category: string;
+    brand?: string;
+    total_quantity: number;
+    available_quantity?: number;
+    condition?: string;
+    rental_rate?: number;
+    is_rentable?: boolean;
+    notes?: string;
+  }) =>
+    request<Equipment>("/api/v1/equipment", { method: "POST", body: JSON.stringify(data) }),
+
+  updateEquipment: (id: number, data: Partial<{
+    branch_id: number;
+    name: string;
+    category: string;
+    brand: string;
+    total_quantity: number;
+    available_quantity: number;
+    condition: string;
+    rental_rate: number;
+    is_rentable: boolean;
+    notes: string;
+    is_active: boolean;
+  }>) =>
+    request<Equipment>(`/api/v1/equipment/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+
+  deleteEquipment: (id: number) =>
+    request<void>(`/api/v1/equipment/${id}`, { method: "DELETE" }),
 };

@@ -7,6 +7,8 @@ RUN apt-get update && \
 
 COPY pyproject.toml .
 COPY src/ src/
+COPY alembic.ini .
+COPY alembic/ alembic/
 RUN pip install --no-cache-dir .
 
 FROM base AS production

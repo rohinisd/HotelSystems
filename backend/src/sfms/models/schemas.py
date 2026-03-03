@@ -215,3 +215,51 @@ class PricingRuleResponse(BaseModel):
     rate: float
     label: str | None
     is_active: bool
+
+
+# --- Equipment ---
+
+class EquipmentCreate(BaseModel):
+    branch_id: int | None = None
+    name: str = Field(..., min_length=1, max_length=255)
+    category: str = Field(..., min_length=1, max_length=100)
+    brand: str | None = Field(None, max_length=100)
+    total_quantity: int = Field(1, ge=1)
+    available_quantity: int | None = None
+    condition: str = Field("good", pattern=r"^(good|fair|poor|needs_repair)$")
+    rental_rate: float | None = Field(None, ge=0)
+    is_rentable: bool = False
+    notes: str | None = None
+
+
+class EquipmentUpdate(BaseModel):
+    branch_id: int | None = None
+    name: str | None = Field(None, min_length=1, max_length=255)
+    category: str | None = Field(None, min_length=1, max_length=100)
+    brand: str | None = Field(None, max_length=100)
+    total_quantity: int | None = Field(None, ge=1)
+    available_quantity: int | None = Field(None, ge=0)
+    condition: str | None = Field(None, pattern=r"^(good|fair|poor|needs_repair)$")
+    rental_rate: float | None = Field(None, ge=0)
+    is_rentable: bool | None = None
+    notes: str | None = None
+    is_active: bool | None = None
+
+
+class EquipmentResponse(BaseModel):
+    id: int
+    facility_id: int
+    branch_id: int | None
+    name: str
+    category: str
+    brand: str | None
+    total_quantity: int
+    available_quantity: int
+    condition: str
+    rental_rate: float | None
+    is_rentable: bool
+    notes: str | None
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+    branch_name: str | None = None

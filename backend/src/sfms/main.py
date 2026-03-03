@@ -13,7 +13,7 @@ from slowapi.util import get_remote_address
 
 from sfms.config import get_settings
 from sfms.middleware.tenant import TenantMiddleware
-from sfms.routers import auth, bookings, courts, dashboard, facilities, health, payments, users
+from sfms.routers import auth, bookings, courts, dashboard, equipment, facilities, health, payments, users
 from sfms.utils.logger import setup_logging
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger(__name__)
@@ -70,6 +70,7 @@ def create_app() -> FastAPI:
     app.include_router(payments.router, prefix="/api/v1")
     app.include_router(dashboard.router, prefix="/api/v1")
     app.include_router(users.router, prefix="/api/v1")
+    app.include_router(equipment.router, prefix="/api/v1")
 
     @app.on_event("startup")
     async def on_startup():
