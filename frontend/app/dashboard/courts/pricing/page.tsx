@@ -8,6 +8,7 @@ import { formatINR } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -22,6 +23,7 @@ function PricingContent() {
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deleteRuleId, setDeleteRuleId] = useState<number | null>(null);
 
   const [dayOfWeek, setDayOfWeek] = useState<string>("");
   const [startTime, setStartTime] = useState("18:00");
@@ -67,13 +69,15 @@ function PricingContent() {
     }
   }
 
-  async function handleDelete(ruleId: number) {
-    if (!confirm("Remove this pricing rule?")) return;
+  async function handleDelete() {
+    if (deleteRuleId === null) return;
     try {
-      await api.deletePricingRule(courtId, ruleId);
+      await api.deletePricingRule(courtId, deleteRuleId);
       loadRules();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to delete");
+    } finally {
+      setDeleteRuleId(null);
     }
   }
 
@@ -174,7 +178,7 @@ function PricingContent() {
                     <td className="px-4 py-3 font-semibold">{formatINR(r.rate)}/hr</td>
                     <td className="px-4 py-3 text-slate-500">{r.label || "-"}</td>
                     <td className="px-4 py-3">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => handleDelete(r.id)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => setDeleteRuleId(r.id)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </td>
@@ -185,6 +189,17 @@ function PricingContent() {
           )}
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={deleteRuleId !== null}
+        title="Remove Pricing Rule"
+        message="Are you sure you want to remove this pricing rule? The default rate will apply instead."
+        confirmLabel="Yes, Remove"
+        cancelLabel="Keep Rule"
+        variant="danger"
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteRuleId(null)}
+      />
     </div>
   );
 }

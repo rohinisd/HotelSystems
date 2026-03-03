@@ -7,6 +7,7 @@ import { formatINR } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Banknote,
   Smartphone,
@@ -27,6 +28,8 @@ export default function BookingsPage() {
   const [payingId, setPayingId] = useState<number | null>(null);
   const [openDropdown, setOpenDropdown] = useState<number | null>(null);
   const [paidIds, setPaidIds] = useState<Set<number>>(new Set());
+  const [cancelId, setCancelId] = useState<number | null>(null);
+  const [refundId, setRefundId] = useState<number | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const role = getRole();
   const canRecordPayment = role === "owner" || role === "manager" || role === "staff";
@@ -70,25 +73,29 @@ export default function BookingsPage() {
     }
   }
 
-  async function handleCancel(id: number) {
-    if (!confirm("Cancel this booking?")) return;
+  async function handleCancel() {
+    if (cancelId === null) return;
     try {
-      await api.cancelBooking(id);
+      await api.cancelBooking(cancelId);
       toast.success("Booking cancelled");
       loadBookings();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Cancel failed");
+    } finally {
+      setCancelId(null);
     }
   }
 
-  async function handleRefund(paymentId: number) {
-    if (!confirm("Issue a refund for this payment?")) return;
+  async function handleRefund() {
+    if (refundId === null) return;
     try {
-      await api.refundPayment(paymentId);
+      await api.refundPayment(refundId);
       toast.success("Refund initiated");
       loadBookings();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Refund failed");
+    } finally {
+      setRefundId(null);
     }
   }
 
@@ -172,7 +179,7 @@ export default function BookingsPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleRefund(b.payment_id!)}
+                        onClick={() => setRefundId(b.payment_id!)}
                         className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 text-xs"
                       >
                         <RotateCcw className="h-3 w-3 mr-1" /> Refund
@@ -210,7 +217,7 @@ export default function BookingsPage() {
                     )}
 
                     {b.status === "confirmed" && (
-                      <Button variant="ghost" size="sm" onClick={() => handleCancel(b.id)} className="text-red-600 hover:text-red-700 hover:bg-red-50 text-xs">
+                      <Button variant="ghost" size="sm" onClick={() => setCancelId(b.id)} className="text-red-600 hover:text-red-700 hover:bg-red-50 text-xs">
                         Cancel
                       </Button>
                     )}
@@ -247,6 +254,27 @@ export default function BookingsPage() {
           </div>
         </div>
       )}
+      <ConfirmDialog
+        open={cancelId !== null}
+        title="Cancel Booking"
+        message="Are you sure you want to cancel this booking? This action cannot be undone."
+        confirmLabel="Yes, Cancel"
+        cancelLabel="Keep Booking"
+        variant="danger"
+        onConfirm={handleCancel}
+        onCancel={() => setCancelId(null)}
+      />
+
+      <ConfirmDialog
+        open={refundId !== null}
+        title="Issue Refund"
+        message="Are you sure you want to refund this payment? The amount will be returned to the customer."
+        confirmLabel="Yes, Refund"
+        cancelLabel="Keep Payment"
+        variant="warning"
+        onConfirm={handleRefund}
+        onCancel={() => setRefundId(null)}
+      />
     </div>
   );
 }

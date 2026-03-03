@@ -6,12 +6,14 @@ import { api, type BookingItem } from "@/lib/api";
 import { formatINR } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { CalendarPlus, Ticket } from "lucide-react";
 import { toast } from "sonner";
 
 export default function MyBookingsPage() {
   const [bookings, setBookings] = useState<BookingItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [cancelId, setCancelId] = useState<number | null>(null);
 
   useEffect(() => {
     loadBookings();
@@ -29,14 +31,16 @@ export default function MyBookingsPage() {
     }
   }
 
-  async function handleCancel(id: number) {
-    if (!confirm("Cancel this booking?")) return;
+  async function handleCancel() {
+    if (cancelId === null) return;
     try {
-      await api.cancelBooking(id);
+      await api.cancelBooking(cancelId);
       toast.success("Booking cancelled");
       loadBookings();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Cancel failed");
+    } finally {
+      setCancelId(null);
     }
   }
 
@@ -121,7 +125,7 @@ export default function MyBookingsPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleCancel(b.id)}
+                          onClick={() => setCancelId(b.id)}
                           className="text-red-600 hover:text-red-700 hover:bg-red-50"
                         >
                           Cancel
@@ -183,6 +187,17 @@ export default function MyBookingsPage() {
           )}
         </>
       )}
+
+      <ConfirmDialog
+        open={cancelId !== null}
+        title="Cancel Booking"
+        message="Are you sure you want to cancel this booking? This action cannot be undone."
+        confirmLabel="Yes, Cancel"
+        cancelLabel="Keep Booking"
+        variant="danger"
+        onConfirm={handleCancel}
+        onCancel={() => setCancelId(null)}
+      />
     </div>
   );
 }

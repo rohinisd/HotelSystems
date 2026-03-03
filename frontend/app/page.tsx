@@ -102,6 +102,12 @@ export default function Home() {
       </main>
 
       <footer className="border-t border-slate-800 py-8 text-center text-sm text-slate-500">
+        <div className="flex justify-center gap-6 mb-3">
+          <Link href="/terms" className="hover:text-slate-300 transition-colors">Terms</Link>
+          <Link href="/privacy" className="hover:text-slate-300 transition-colors">Privacy</Link>
+          <Link href="/refund-policy" className="hover:text-slate-300 transition-colors">Refund Policy</Link>
+          <Link href="/contact" className="hover:text-slate-300 transition-colors">Contact</Link>
+        </div>
         &copy; {new Date().getFullYear()} TurfStack &middot; Built in Hyderabad
       </footer>
     </div>
