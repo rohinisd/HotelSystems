@@ -10,7 +10,7 @@ describe("Landing page", () => {
 
   it("renders call-to-action buttons", () => {
     render(<Home />);
-    expect(screen.getByText(/Book a Court/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Book a Court/).length).toBeGreaterThan(0);
     expect(screen.getByText("Facility Login")).toBeInTheDocument();
   });
 

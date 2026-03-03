@@ -51,3 +51,13 @@ def owner_token():
 @pytest.fixture
 def manager_token():
     return _create_token(user_id=1, role="manager", facility_id=1)
+
+
+@pytest.fixture
+def staff_token():
+    return _create_token(user_id=1, role="staff", facility_id=1)
+
+
+@pytest.fixture
+def accountant_token():
+    return _create_token(user_id=1, role="accountant", facility_id=1)
