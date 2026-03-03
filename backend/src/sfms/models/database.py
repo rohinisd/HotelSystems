@@ -25,6 +25,9 @@ def get_engine():
             settings.async_database_url,
             echo=settings.debug,
             pool_pre_ping=True,
+            pool_size=10,
+            max_overflow=20,
+            pool_recycle=300,
             connect_args=_get_connect_args(settings.async_database_url),
         )
     return _engine
