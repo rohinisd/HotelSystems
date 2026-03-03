@@ -1,30 +1,98 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   CalendarDays,
+  CalendarPlus,
+  CalendarClock,
   Trophy,
   BarChart3,
   Settings,
   LogOut,
+  Ticket,
+  GitBranch,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { clearAuth } from "@/lib/auth";
-import { useRouter } from "next/navigation";
+import { clearAuth, getRole } from "@/lib/auth";
 
-const navItems = [
-  { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Bookings", href: "/dashboard/bookings", icon: CalendarDays },
-  { label: "Courts", href: "/dashboard/courts", icon: Trophy },
-  { label: "Revenue", href: "/dashboard/revenue", icon: BarChart3 },
-  { label: "Settings", href: "/dashboard/settings", icon: Settings },
+interface NavItem {
+  label: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  roles: string[];
+}
+
+const navItems: NavItem[] = [
+  {
+    label: "Overview",
+    href: "/dashboard",
+    icon: LayoutDashboard,
+    roles: ["owner", "manager"],
+  },
+  {
+    label: "Schedule",
+    href: "/dashboard/schedule",
+    icon: CalendarClock,
+    roles: ["owner", "manager", "staff"],
+  },
+  {
+    label: "Bookings",
+    href: "/dashboard/bookings",
+    icon: CalendarDays,
+    roles: ["owner", "manager", "staff"],
+  },
+  {
+    label: "Walk-in Booking",
+    href: "/book",
+    icon: CalendarPlus,
+    roles: ["staff"],
+  },
+  {
+    label: "Book a Court",
+    href: "/book",
+    icon: CalendarPlus,
+    roles: ["player"],
+  },
+  {
+    label: "My Bookings",
+    href: "/dashboard/my-bookings",
+    icon: Ticket,
+    roles: ["player"],
+  },
+  {
+    label: "Courts",
+    href: "/dashboard/courts",
+    icon: Trophy,
+    roles: ["owner", "manager"],
+  },
+  {
+    label: "Revenue",
+    href: "/dashboard/revenue",
+    icon: BarChart3,
+    roles: ["owner", "manager", "accountant"],
+  },
+  {
+    label: "Branches",
+    href: "/dashboard/branches",
+    icon: GitBranch,
+    roles: ["owner"],
+  },
+  {
+    label: "Settings",
+    href: "/dashboard/settings",
+    icon: Settings,
+    roles: ["owner", "manager"],
+  },
 ];
 
 export function Sidebar({ className }: { className?: string }) {
   const pathname = usePathname();
   const router = useRouter();
+  const role = getRole() || "player";
+
+  const visibleItems = navItems.filter((item) => item.roles.includes(role));
 
   function handleLogout() {
     clearAuth();
@@ -32,7 +100,9 @@ export function Sidebar({ className }: { className?: string }) {
   }
 
   return (
-    <div className={cn("flex w-64 flex-col bg-slate-900 text-white", className)}>
+    <div
+      className={cn("flex w-64 flex-col bg-slate-900 text-white", className)}
+    >
       <div className="flex h-16 items-center gap-2.5 px-6 border-b border-slate-700">
         <div className="h-8 w-8 rounded-lg bg-emerald-500 flex items-center justify-center font-bold text-xs tracking-tight">
           TS
@@ -40,12 +110,20 @@ export function Sidebar({ className }: { className?: string }) {
         <span className="text-lg font-bold tracking-tight">TurfStack</span>
       </div>
 
-      <nav className="flex-1 space-y-1 px-3 py-4">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href;
+      <div className="px-4 pt-4 pb-2">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+          {role === "player" ? "Player" : role === "accountant" ? "Accounts" : "Management"}
+        </span>
+      </div>
+
+      <nav className="flex-1 space-y-1 px-3 pb-4">
+        {visibleItems.map((item) => {
+          const isActive =
+            pathname === item.href ||
+            (item.href !== "/dashboard" && pathname.startsWith(item.href));
           return (
             <Link
-              key={item.href}
+              key={item.href + item.label}
               href={item.href}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",

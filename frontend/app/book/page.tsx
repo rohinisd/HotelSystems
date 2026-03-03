@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { api, type Branch, type Court } from "@/lib/api";
-import { isAuthenticated } from "@/lib/auth";
+import { api, type Branch, type Court, type Facility } from "@/lib/api";
+import { isAuthenticated, getFacilityId, getRole } from "@/lib/auth";
 import { formatINR } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,7 +21,11 @@ interface Slot {
 
 export default function BookPage() {
   const router = useRouter();
-  const [step, setStep] = useState(1);
+  const role = getRole();
+  const isStaff = role === "staff" || role === "owner" || role === "manager";
+
+  const [facilities, setFacilities] = useState<Facility[]>([]);
+  const [selectedFacility, setSelectedFacility] = useState<number | null>(null);
   const [sport, setSport] = useState<string | null>(null);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [courts, setCourts] = useState<Court[]>([]);
@@ -33,15 +37,37 @@ export default function BookPage() {
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [booking, setBooking] = useState(false);
   const [error, setError] = useState("");
+  const [playerName, setPlayerName] = useState("");
+  const [playerPhone, setPlayerPhone] = useState("");
 
   useEffect(() => {
-    api.getBranches(1).then(setBranches).catch(() => {});
+    const facilityId = getFacilityId();
+    if (facilityId) {
+      setSelectedFacility(facilityId);
+      api.getBranches(facilityId).then(setBranches).catch(() => {});
+    } else {
+      api.getFacilities().then((facs) => {
+        setFacilities(facs);
+        if (facs.length === 1) {
+          setSelectedFacility(facs[0].id);
+          api.getBranches(facs[0].id).then(setBranches).catch(() => {});
+        }
+      }).catch(() => {});
+    }
   }, []);
+
+  function handleFacilitySelect(fid: number) {
+    setSelectedFacility(fid);
+    setSelectedBranch(null);
+    setSelectedCourt(null);
+    setSlots([]);
+    api.getBranches(fid).then(setBranches).catch(() => {});
+  }
 
   useEffect(() => {
     if (selectedBranch && sport) {
-      api.getCourts(selectedBranch).then((courts) => {
-        setCourts(courts.filter((c) => c.sport === sport));
+      api.getCourts(selectedBranch).then((c) => {
+        setCourts(c.filter((x) => x.sport === sport));
       });
     }
   }, [selectedBranch, sport]);
@@ -49,14 +75,8 @@ export default function BookPage() {
   useEffect(() => {
     if (selectedCourt && selectedDate) {
       setLoadingSlots(true);
-      fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001"}/api/v1/bookings/slots?court_id=${selectedCourt.id}&date=${selectedDate}`,
-      )
-        .then((r) => r.json())
-        .then((data) => {
-          setSlots(data);
-          setSelectedSlot(null);
-        })
+      api.getSlots(selectedCourt.id, selectedDate)
+        .then((data) => { setSlots(data); setSelectedSlot(null); })
         .catch(() => setSlots([]))
         .finally(() => setLoadingSlots(false));
     }
@@ -64,22 +84,29 @@ export default function BookPage() {
 
   async function handleBook() {
     if (!selectedSlot || !selectedCourt) return;
-    if (!isAuthenticated()) {
-      router.push("/login");
-      return;
-    }
+    if (!isAuthenticated()) { router.push("/login"); return; }
 
     setBooking(true);
     setError("");
     try {
+      const bookingType = isStaff ? "walkin" : "online";
       const result = await api.createBooking({
         court_id: selectedCourt.id,
         date: selectedDate,
         start_time: selectedSlot.start_time,
         end_time: selectedSlot.end_time,
-        booking_type: "online",
+        booking_type: bookingType,
+        player_name: playerName || undefined,
+        player_phone: playerPhone || undefined,
       });
-      router.push(`/book/confirmation?id=${result.id}&amount=${result.amount}`);
+      const qs = new URLSearchParams({
+        id: String(result.id),
+        amount: String(result.amount),
+        court: `${selectedCourt.name} - ${sport}`,
+        date: selectedDate,
+        time: `${selectedSlot.start_time} - ${selectedSlot.end_time}`,
+      });
+      router.push(`/book/confirmation?${qs.toString()}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Booking failed");
     } finally {
@@ -87,19 +114,40 @@ export default function BookPage() {
     }
   }
 
+  const showFacilityPicker = !getFacilityId() && facilities.length > 1;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 p-4 sm:p-8">
       <div className="mx-auto max-w-3xl space-y-6">
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-slate-900">Book a Court</h1>
+          <h1 className="text-3xl font-bold text-slate-900">
+            {isStaff ? "Walk-in Booking" : "Book a Court"}
+          </h1>
           <p className="text-slate-500">Select your sport, venue, and time slot</p>
         </div>
 
-        {/* Step 1: Sport */}
+        {showFacilityPicker && (
+          <Card>
+            <CardHeader><CardTitle className="text-lg">Choose Facility</CardTitle></CardHeader>
+            <CardContent>
+              <div className="flex gap-2 flex-wrap">
+                {facilities.map((f) => (
+                  <Button
+                    key={f.id}
+                    variant={selectedFacility === f.id ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleFacilitySelect(f.id)}
+                  >
+                    {f.name}
+                  </Button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">1. Choose Sport</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle className="text-lg">1. Choose Sport</CardTitle></CardHeader>
           <CardContent>
             <SportSelector
               selected={sport}
@@ -107,18 +155,14 @@ export default function BookPage() {
                 setSport(s);
                 setSelectedCourt(null);
                 setSlots([]);
-                if (selectedBranch) setStep(2);
               }}
             />
           </CardContent>
         </Card>
 
-        {/* Step 2: Branch + Court */}
-        {sport && (
+        {sport && selectedFacility && (
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">2. Choose Venue & Court</CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle className="text-lg">2. Choose Venue & Court</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-2 flex-wrap">
                 {branches.map((b) => (
@@ -136,7 +180,6 @@ export default function BookPage() {
                   </Button>
                 ))}
               </div>
-
               {courts.length > 0 && (
                 <div className="flex gap-2 flex-wrap">
                   {courts.map((c) => (
@@ -144,10 +187,7 @@ export default function BookPage() {
                       key={c.id}
                       variant={selectedCourt?.id === c.id ? "default" : "outline"}
                       size="sm"
-                      onClick={() => {
-                        setSelectedCourt(c);
-                        setStep(3);
-                      }}
+                      onClick={() => setSelectedCourt(c)}
                     >
                       {c.name} ({c.surface_type || c.sport}) - {formatINR(c.hourly_rate)}/hr
                     </Button>
@@ -161,12 +201,9 @@ export default function BookPage() {
           </Card>
         )}
 
-        {/* Step 3: Date + Slots */}
         {selectedCourt && (
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">3. Pick Date & Time</CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle className="text-lg">3. Pick Date & Time</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <Input
                 type="date"
@@ -175,39 +212,35 @@ export default function BookPage() {
                 onChange={(e) => setSelectedDate(e.target.value)}
                 className="max-w-xs"
               />
-              <SlotGrid
-                slots={slots}
-                selectedSlot={selectedSlot}
-                onSelect={setSelectedSlot}
-                loading={loadingSlots}
-              />
+              <SlotGrid slots={slots} selectedSlot={selectedSlot} onSelect={setSelectedSlot} loading={loadingSlots} />
             </CardContent>
           </Card>
         )}
 
-        {/* Confirm */}
+        {selectedSlot && isStaff && (
+          <Card>
+            <CardHeader><CardTitle className="text-lg">4. Player Details (Walk-in)</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              <Input placeholder="Player name" value={playerName} onChange={(e) => setPlayerName(e.target.value)} />
+              <Input placeholder="Phone number" value={playerPhone} onChange={(e) => setPlayerPhone(e.target.value)} />
+            </CardContent>
+          </Card>
+        )}
+
         {selectedSlot && (
           <Card className="border-emerald-200 bg-emerald-50/50">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-semibold text-slate-900">
-                    {selectedCourt?.name} - {sport}
-                  </p>
-                  <p className="text-sm text-slate-600">
-                    {selectedDate} | {selectedSlot.start_time} - {selectedSlot.end_time}
-                  </p>
-                  <p className="text-lg font-bold text-emerald-600 mt-1">
-                    {formatINR(selectedSlot.price)}
-                  </p>
+                  <p className="font-semibold text-slate-900">{selectedCourt?.name} - {sport}</p>
+                  <p className="text-sm text-slate-600">{selectedDate} | {selectedSlot.start_time} - {selectedSlot.end_time}</p>
+                  <p className="text-lg font-bold text-emerald-600 mt-1">{formatINR(selectedSlot.price)}</p>
                 </div>
                 <Button onClick={handleBook} disabled={booking} size="lg">
                   {booking ? "Booking..." : "Confirm Booking"}
                 </Button>
               </div>
-              {error && (
-                <p className="mt-3 text-sm text-red-600">{error}</p>
-              )}
+              {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
             </CardContent>
           </Card>
         )}

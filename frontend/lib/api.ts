@@ -9,6 +9,8 @@ class ApiError extends Error {
   }
 }
 
+let isRefreshing = false;
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const token =
     typeof window !== "undefined" ? localStorage.getItem("sfms_token") : null;
@@ -21,6 +23,32 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
       ...options?.headers,
     },
   });
+
+  if (res.status === 401 && token && !isRefreshing && path !== "/api/v1/auth/refresh") {
+    isRefreshing = true;
+    try {
+      const refreshRes = await fetch(`${API_BASE}/api/v1/auth/refresh`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (refreshRes.ok) {
+        const data = await refreshRes.json();
+        localStorage.setItem("sfms_token", data.access_token);
+        isRefreshing = false;
+        return request<T>(path, options);
+      }
+    } catch {}
+    isRefreshing = false;
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("sfms_token");
+      localStorage.removeItem("sfms_role");
+      localStorage.removeItem("sfms_facility_id");
+      window.location.href = "/login";
+    }
+  }
 
   if (!res.ok) {
     const text = await res.text();
@@ -108,6 +136,9 @@ export interface BookingItem {
   amount: number;
   notes: string | null;
   created_at: string;
+  payment_id: number | null;
+  payment_status: string | null;
+  payment_method: string | null;
 }
 
 export interface ScheduleItem extends BookingItem {
@@ -141,6 +172,24 @@ export interface UtilizationData {
   sport: string;
   total_bookings: number;
   total_revenue: number;
+}
+
+export interface HourlyUtilization {
+  court_name: string;
+  day_of_week: number;
+  hour: number;
+  booking_count: number;
+}
+
+export interface PricingRule {
+  id: number;
+  court_id: number;
+  day_of_week: number | null;
+  start_time: string;
+  end_time: string;
+  rate: number;
+  label: string | null;
+  is_active: boolean;
 }
 
 // --- API Client ---
@@ -231,6 +280,71 @@ export const api = {
   recordCashPayment: (bookingId: number) =>
     request<{ status: string }>(`/api/v1/payments/cash/${bookingId}`, { method: "POST" }),
 
+  recordUpiPayment: (bookingId: number) =>
+    request<{ status: string }>(`/api/v1/payments/upi/${bookingId}`, { method: "POST" }),
+
+  refundPayment: (paymentId: number) =>
+    request<{ refund_id: string; status: string }>(`/api/v1/payments/refund/${paymentId}`, { method: "POST" }),
+
+  // Courts CRUD
+  createCourt: (data: {
+    branch_id: number;
+    name: string;
+    sport: string;
+    surface_type?: string;
+    hourly_rate: number;
+    peak_hour_rate?: number;
+    slot_duration_minutes?: number;
+    is_indoor?: boolean;
+  }) =>
+    request<Court>("/api/v1/courts", { method: "POST", body: JSON.stringify(data) }),
+
+  updateCourt: (id: number, data: Partial<{
+    name: string;
+    sport: string;
+    surface_type: string;
+    hourly_rate: number;
+    peak_hour_rate: number;
+    slot_duration_minutes: number;
+    is_indoor: boolean;
+    is_active: boolean;
+  }>) =>
+    request<Court>(`/api/v1/courts/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+
+  getCourtPricing: (courtId: number) =>
+    request<PricingRule[]>(`/api/v1/courts/${courtId}/pricing`),
+
+  createPricingRule: (courtId: number, data: {
+    day_of_week?: number;
+    start_time: string;
+    end_time: string;
+    rate: number;
+    label?: string;
+  }) =>
+    request<PricingRule>(`/api/v1/courts/${courtId}/pricing`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  deletePricingRule: (courtId: number, ruleId: number) =>
+    request<void>(`/api/v1/courts/${courtId}/pricing/${ruleId}`, { method: "DELETE" }),
+
+  // Branches
+  createBranch: (facilityId: number, data: {
+    name: string;
+    address?: string;
+    city?: string;
+    state?: string;
+    pincode?: string;
+    phone?: string;
+    opening_time?: string;
+    closing_time?: string;
+  }) =>
+    request<Branch>(`/api/v1/facilities/${facilityId}/branches`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
   // Dashboard
   getDashboardKPIs: () => request<DashboardKPI[]>("/api/v1/dashboard/kpis"),
 
@@ -241,4 +355,9 @@ export const api = {
 
   getUtilization: () =>
     request<UtilizationData[]>("/api/v1/dashboard/utilization"),
+
+  getHourlyUtilization: (days?: number) =>
+    request<HourlyUtilization[]>(
+      `/api/v1/dashboard/utilization/hourly${days ? `?days=${days}` : ""}`,
+    ),
 };

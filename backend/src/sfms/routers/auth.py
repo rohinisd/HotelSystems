@@ -87,6 +87,31 @@ async def register(req: RegisterRequest, db: AsyncSession = Depends(get_db)):
     )
 
 
+@router.post("/refresh", response_model=TokenResponse)
+async def refresh_token(
+    db: AsyncSession = Depends(get_db),
+    user: dict = Depends(get_current_user),
+):
+    user_id = int(user["sub"])
+    result = await db.execute(
+        text("SELECT id, email, role, facility_id, is_active FROM users WHERE id = :id"),
+        {"id": user_id},
+    )
+    row = result.mappings().first()
+    if not row or not row["is_active"]:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "User not found or disabled")
+
+    settings = get_settings()
+    token = _create_token(row["id"], row["email"], row["role"], row["facility_id"])
+
+    return TokenResponse(
+        access_token=token,
+        expires_in=settings.jwt_expire_minutes * 60,
+        role=row["role"],
+        facility_id=row["facility_id"],
+    )
+
+
 @router.get("/me", response_model=UserResponse)
 async def get_me(
     db: AsyncSession = Depends(get_db),

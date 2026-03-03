@@ -5,7 +5,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from sfms.dependencies import get_current_user, get_db, get_tenant_id, require_roles
-from sfms.models.schemas import CourtCreate, CourtResponse, CourtUpdate, PricingRuleResponse
+from sfms.models.schemas import CourtCreate, CourtResponse, CourtUpdate, PricingRuleCreate, PricingRuleResponse
 
 router = APIRouter(prefix="/courts", tags=["Courts"])
 
@@ -112,3 +112,50 @@ async def get_pricing_rules(
     )
     rows = result.mappings().all()
     return [PricingRuleResponse(**r) for r in rows]
+
+
+@router.post("/{court_id}/pricing", response_model=PricingRuleResponse, status_code=status.HTTP_201_CREATED)
+async def create_pricing_rule(
+    court_id: int,
+    req: PricingRuleCreate,
+    db: AsyncSession = Depends(get_db),
+    user: dict = Depends(require_roles("owner", "manager")),
+    tenant_id: int | None = Depends(get_tenant_id),
+):
+    if not tenant_id:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Tenant context required")
+
+    result = await db.execute(
+        text(
+            """INSERT INTO pricing_rule (court_id, facility_id, day_of_week, start_time, end_time, rate, label)
+               VALUES (:cid, :fid, :dow, :start, :end, :rate, :label)
+               RETURNING *"""
+        ),
+        {
+            "cid": court_id,
+            "fid": tenant_id,
+            "dow": req.day_of_week,
+            "start": req.start_time,
+            "end": req.end_time,
+            "rate": req.rate,
+            "label": req.label,
+        },
+    )
+    await db.commit()
+    row = result.mappings().first()
+    return PricingRuleResponse(**row)
+
+
+@router.delete("/{court_id}/pricing/{rule_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_pricing_rule(
+    court_id: int,
+    rule_id: int,
+    db: AsyncSession = Depends(get_db),
+    user: dict = Depends(require_roles("owner", "manager")),
+    tenant_id: int | None = Depends(get_tenant_id),
+):
+    await db.execute(
+        text("UPDATE pricing_rule SET is_active = false WHERE id = :id AND court_id = :cid AND facility_id = :fid"),
+        {"id": rule_id, "cid": court_id, "fid": tenant_id},
+    )
+    await db.commit()

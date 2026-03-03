@@ -1,20 +1,46 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { api, type BookingItem } from "@/lib/api";
+import { getRole } from "@/lib/auth";
 import { formatINR } from "@/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Banknote,
+  Smartphone,
+  ChevronDown,
+  CheckCircle,
+  RotateCcw,
+} from "lucide-react";
+import { toast } from "sonner";
 
 export default function BookingsPage() {
   const [bookings, setBookings] = useState<BookingItem[]>([]);
   const [dateFilter, setDateFilter] = useState(new Date().toISOString().split("T")[0]);
   const [loading, setLoading] = useState(true);
+  const [payingId, setPayingId] = useState<number | null>(null);
+  const [openDropdown, setOpenDropdown] = useState<number | null>(null);
+  const [paidIds, setPaidIds] = useState<Set<number>>(new Set());
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const role = getRole();
+  const canRecordPayment = role === "owner" || role === "manager" || role === "staff";
+  const canRefund = role === "owner" || role === "manager";
 
   useEffect(() => {
     loadBookings();
   }, [dateFilter]);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setOpenDropdown(null);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   async function loadBookings() {
     setLoading(true);
@@ -32,9 +58,39 @@ export default function BookingsPage() {
     if (!confirm("Cancel this booking?")) return;
     try {
       await api.cancelBooking(id);
+      toast.success("Booking cancelled");
       loadBookings();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Cancel failed");
+      toast.error(err instanceof Error ? err.message : "Cancel failed");
+    }
+  }
+
+  async function handleRefund(paymentId: number) {
+    if (!confirm("Issue a refund for this payment?")) return;
+    try {
+      await api.refundPayment(paymentId);
+      toast.success("Refund initiated");
+      loadBookings();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Refund failed");
+    }
+  }
+
+  async function handleRecordPayment(bookingId: number, method: "cash" | "upi") {
+    setPayingId(bookingId);
+    setOpenDropdown(null);
+    try {
+      if (method === "cash") {
+        await api.recordCashPayment(bookingId);
+      } else {
+        await api.recordUpiPayment(bookingId);
+      }
+      setPaidIds((prev) => new Set(prev).add(bookingId));
+      toast.success(`${method.toUpperCase()} payment recorded`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Payment recording failed");
+    } finally {
+      setPayingId(null);
     }
   }
 
@@ -83,13 +139,62 @@ export default function BookingsPage() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 sm:gap-3">
                     <span className="text-sm font-semibold">{formatINR(b.amount)}</span>
-                    <span className={`rounded-full px-2 py-1 text-xs font-medium ${statusColors[b.status] || "bg-slate-100"}`}>
-                      {b.status}
-                    </span>
+
+                    {(paidIds.has(b.id) || b.payment_status === "captured") ? (
+                      <span className="flex items-center gap-1 rounded-full bg-emerald-100 text-emerald-700 px-2.5 py-1 text-xs font-medium">
+                        <CheckCircle className="h-3 w-3" /> Paid {b.payment_method ? `(${b.payment_method})` : ""}
+                      </span>
+                    ) : (
+                      <span className={`rounded-full px-2 py-1 text-xs font-medium ${statusColors[b.status] || "bg-slate-100"}`}>
+                        {b.status}
+                      </span>
+                    )}
+
+                    {b.status === "cancelled" && b.payment_id && b.payment_status === "captured" && canRefund && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRefund(b.payment_id!)}
+                        className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 text-xs"
+                      >
+                        <RotateCcw className="h-3 w-3 mr-1" /> Refund
+                      </Button>
+                    )}
+
+                    {b.status === "confirmed" && !paidIds.has(b.id) && b.payment_status !== "captured" && canRecordPayment && (
+                      <div className="relative" ref={openDropdown === b.id ? dropdownRef : undefined}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setOpenDropdown(openDropdown === b.id ? null : b.id)}
+                          disabled={payingId === b.id}
+                          className="text-xs"
+                        >
+                          {payingId === b.id ? "..." : <>Payment <ChevronDown className="h-3 w-3 ml-1" /></>}
+                        </Button>
+                        {openDropdown === b.id && (
+                          <div className="absolute right-0 top-full mt-1 z-20 w-36 rounded-lg border bg-white shadow-lg py-1">
+                            <button
+                              onClick={() => handleRecordPayment(b.id, "cash")}
+                              className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-slate-50"
+                            >
+                              <Banknote className="h-4 w-4 text-emerald-600" /> Cash
+                            </button>
+                            <button
+                              onClick={() => handleRecordPayment(b.id, "upi")}
+                              className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-slate-50"
+                            >
+                              <Smartphone className="h-4 w-4 text-blue-600" /> UPI
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     {b.status === "confirmed" && (
-                      <Button variant="ghost" size="sm" onClick={() => handleCancel(b.id)} className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                      <Button variant="ghost" size="sm" onClick={() => handleCancel(b.id)} className="text-red-600 hover:text-red-700 hover:bg-red-50 text-xs">
                         Cancel
                       </Button>
                     )}

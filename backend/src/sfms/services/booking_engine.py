@@ -148,10 +148,12 @@ class BookingEngine:
         player_id: int | None = None,
         status: str | None = None,
     ) -> list[dict]:
-        query = """SELECT b.*, c.name as court_name, br.name as branch_name
+        query = """SELECT b.*, c.name as court_name, br.name as branch_name,
+                          p.id as payment_id, p.status as payment_status, p.method as payment_method
                    FROM booking b
                    JOIN court c ON b.court_id = c.id
                    JOIN branch br ON c.branch_id = br.id
+                   LEFT JOIN payment p ON b.id = p.booking_id AND p.status = 'captured'
                    WHERE 1=1"""
         params: dict = {}
 

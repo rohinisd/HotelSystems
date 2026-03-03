@@ -167,6 +167,9 @@ class BookingResponse(BaseModel):
     amount: float
     notes: str | None
     created_at: datetime
+    payment_id: int | None = None
+    payment_status: str | None = None
+    payment_method: str | None = None
 
 
 # --- Slots ---
@@ -189,6 +192,14 @@ class DashboardKPI(BaseModel):
 
 
 # --- Pricing ---
+
+class PricingRuleCreate(BaseModel):
+    day_of_week: int | None = Field(None, ge=0, le=6)
+    start_time: time
+    end_time: time
+    rate: float = Field(..., gt=0)
+    label: str | None = None
+
 
 class PricingRuleResponse(BaseModel):
     id: int

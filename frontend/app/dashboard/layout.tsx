@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { MobileNav } from "@/components/layout/mobile-nav";
+import { isAuthenticated } from "@/lib/auth";
 
 export default function DashboardLayout({
   children,
@@ -11,6 +13,29 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [checking, setChecking] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      router.replace("/login");
+    } else {
+      setChecking(false);
+    }
+  }, [router]);
+
+  if (checking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-emerald-50">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-10 w-10 rounded-lg bg-emerald-500 flex items-center justify-center font-bold text-xs tracking-tight text-white animate-pulse">
+            TS
+          </div>
+          <p className="text-sm text-slate-500">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-emerald-50">

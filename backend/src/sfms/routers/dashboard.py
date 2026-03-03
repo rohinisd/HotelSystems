@@ -91,6 +91,43 @@ async def get_utilization(
     ]
 
 
+@router.get("/utilization/hourly")
+async def get_hourly_utilization(
+    days: int = Query(30, ge=7, le=90),
+    db: AsyncSession = Depends(get_db),
+    user: dict = Depends(require_roles("owner", "manager")),
+    tenant_id: int | None = Depends(get_tenant_id),
+):
+    if not tenant_id:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Tenant context required")
+
+    result = await db.execute(
+        text(
+            """SELECT c.name as court_name,
+                      EXTRACT(DOW FROM b.date)::int as day_of_week,
+                      EXTRACT(HOUR FROM b.start_time)::int as hour,
+                      COUNT(*) as booking_count
+               FROM booking b
+               JOIN court c ON b.court_id = c.id
+               WHERE b.facility_id = :fid
+                 AND b.date >= CURRENT_DATE - :days
+                 AND b.status != 'cancelled'
+               GROUP BY c.name, day_of_week, hour
+               ORDER BY c.name, day_of_week, hour"""
+        ),
+        {"fid": tenant_id, "days": days},
+    )
+    return [
+        {
+            "court_name": r.court_name,
+            "day_of_week": r.day_of_week,
+            "hour": r.hour,
+            "booking_count": r.booking_count,
+        }
+        for r in result.fetchall()
+    ]
+
+
 @router.get("/export/revenue")
 async def export_revenue_csv(
     start_date: str = Query(None),
