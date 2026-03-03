@@ -134,7 +134,7 @@ export default function SettingsPage() {
                 <label className="text-sm font-medium text-slate-700">
                   Facility Name
                 </label>
-                <Input defaultValue="Smash Arena" />
+                <Input defaultValue="TurfStack Arena" />
               </div>
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-slate-700">

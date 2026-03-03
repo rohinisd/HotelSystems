@@ -3,7 +3,7 @@
 
 -- Facility (tenant)
 INSERT INTO facility (name, slug, owner_name, owner_email, owner_phone) VALUES
-('Smash Arena', 'smash-arena', 'Girish Hiremath', 'girish@smasharena.in', '9876543210');
+('TurfStack Arena', 'turfstack-arena', 'Girish Hiremath', 'girish@turfstack.in', '9876543210');
 
 -- Branches
 INSERT INTO branch (facility_id, name, address, city, state, pincode, phone) VALUES
@@ -23,12 +23,12 @@ INSERT INTO court (branch_id, facility_id, name, sport, surface_type, hourly_rat
 -- Users (password for all: "password123" -- bcrypt hash)
 -- Generated with: python -c "from passlib.context import CryptContext; print(CryptContext(schemes=['bcrypt']).hash('password123'))"
 INSERT INTO users (facility_id, email, hashed_password, full_name, phone, role) VALUES
-(1, 'owner@smasharena.in', '$2b$12$LJ3m4ys3Lk0TSwHBQRCBxuGz7AbDwNnqX6bIylfhk3qXRMqE5tC.a', 'Girish Hiremath', '9876543210', 'owner'),
-(1, 'manager@smasharena.in', '$2b$12$LJ3m4ys3Lk0TSwHBQRCBxuGz7AbDwNnqX6bIylfhk3qXRMqE5tC.a', 'Ravi Kumar', '9876543211', 'manager'),
-(1, 'staff@smasharena.in', '$2b$12$LJ3m4ys3Lk0TSwHBQRCBxuGz7AbDwNnqX6bIylfhk3qXRMqE5tC.a', 'Priya Sharma', '9876543212', 'staff'),
-(1, 'accounts@smasharena.in', '$2b$12$LJ3m4ys3Lk0TSwHBQRCBxuGz7AbDwNnqX6bIylfhk3qXRMqE5tC.a', 'Suresh Reddy', '9876543214', 'accountant'),
-(NULL, 'arjun@example.com', '$2b$12$LJ3m4ys3Lk0TSwHBQRCBxuGz7AbDwNnqX6bIylfhk3qXRMqE5tC.a', 'Arjun Reddy', '9876543213', 'player'),
-(NULL, 'meera@example.com', '$2b$12$LJ3m4ys3Lk0TSwHBQRCBxuGz7AbDwNnqX6bIylfhk3qXRMqE5tC.a', 'Meera Patel', '9876543215', 'player');
+(1, 'owner@turfstack.in', '$2b$12$LJ3m4ys3Lk0TSwHBQRCBxuGz7AbDwNnqX6bIylfhk3qXRMqE5tC.a', 'Girish Hiremath', '9876543210', 'owner'),
+(1, 'manager@turfstack.in', '$2b$12$LJ3m4ys3Lk0TSwHBQRCBxuGz7AbDwNnqX6bIylfhk3qXRMqE5tC.a', 'Ravi Kumar', '9876543211', 'manager'),
+(1, 'staff@turfstack.in', '$2b$12$LJ3m4ys3Lk0TSwHBQRCBxuGz7AbDwNnqX6bIylfhk3qXRMqE5tC.a', 'Priya Sharma', '9876543212', 'staff'),
+(1, 'accounts@turfstack.in', '$2b$12$LJ3m4ys3Lk0TSwHBQRCBxuGz7AbDwNnqX6bIylfhk3qXRMqE5tC.a', 'Suresh Reddy', '9876543214', 'accountant'),
+(NULL, 'arjun@turfstack.in', '$2b$12$LJ3m4ys3Lk0TSwHBQRCBxuGz7AbDwNnqX6bIylfhk3qXRMqE5tC.a', 'Arjun Reddy', '9876543213', 'player'),
+(NULL, 'meera@turfstack.in', '$2b$12$LJ3m4ys3Lk0TSwHBQRCBxuGz7AbDwNnqX6bIylfhk3qXRMqE5tC.a', 'Meera Patel', '9876543215', 'player');
 
 -- Pricing rules
 INSERT INTO pricing_rule (court_id, facility_id, day_of_week, start_time, end_time, rate, label) VALUES

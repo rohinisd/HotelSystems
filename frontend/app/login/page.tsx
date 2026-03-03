@@ -40,7 +40,7 @@ export default function LoginPage() {
   }
 
   function fillDemo() {
-    setEmail("owner@smasharena.in");
+    setEmail("owner@turfstack.in");
     setPassword("password123");
     setIsRegister(false);
   }

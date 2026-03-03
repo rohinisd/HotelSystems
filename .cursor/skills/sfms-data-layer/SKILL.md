@@ -144,7 +144,7 @@ ALTER TABLE booking ADD CONSTRAINT uq_no_overlap
 -- db/seed.sql
 
 INSERT INTO facility (name, slug, owner_name, owner_email) VALUES
-('Smash Arena', 'smash-arena', 'Girish Hiremath', 'girish@smasharena.in');
+('TurfStack Arena', 'turfstack-arena', 'Girish Hiremath', 'girish@turfstack.in');
 
 INSERT INTO branch (facility_id, name, address, city, state, pincode) VALUES
 (1, 'Gachibowli', 'Plot 42, Nanakramguda Road', 'Hyderabad', 'Telangana', '500032'),
@@ -158,10 +158,10 @@ INSERT INTO court (branch_id, facility_id, name, sport, hourly_rate, peak_hour_r
 (2, 1, 'Court 2', 'volleyball', 600.00, 900.00, 60);
 
 INSERT INTO users (facility_id, email, hashed_password, full_name, phone, role) VALUES
-(1, 'owner@smasharena.in', '$2b$12$PLACEHOLDER_HASH', 'Girish Hiremath', '9876543210', 'owner'),
-(1, 'manager@smasharena.in', '$2b$12$PLACEHOLDER_HASH', 'Ravi Kumar', '9876543211', 'manager'),
-(1, 'staff@smasharena.in', '$2b$12$PLACEHOLDER_HASH', 'Priya Sharma', '9876543212', 'staff'),
-(NULL, 'player@example.com', '$2b$12$PLACEHOLDER_HASH', 'Arjun Reddy', '9876543213', 'player');
+(1, 'owner@turfstack.in', '$2b$12$PLACEHOLDER_HASH', 'Girish Hiremath', '9876543210', 'owner'),
+(1, 'manager@turfstack.in', '$2b$12$PLACEHOLDER_HASH', 'Ravi Kumar', '9876543211', 'manager'),
+(1, 'staff@turfstack.in', '$2b$12$PLACEHOLDER_HASH', 'Priya Sharma', '9876543212', 'staff'),
+(NULL, 'arjun@turfstack.in', '$2b$12$PLACEHOLDER_HASH', 'Arjun Reddy', '9876543213', 'player');
 
 INSERT INTO pricing_rule (court_id, facility_id, day_of_week, start_time, end_time, rate, label) VALUES
 (1, 1, NULL, '06:00', '09:00', 600.00, 'early-bird'),
