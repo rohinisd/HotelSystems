@@ -147,36 +147,47 @@ class BookingEngine:
         court_id: int | None = None,
         player_id: int | None = None,
         status: str | None = None,
-    ) -> list[dict]:
-        query = """SELECT b.*, c.name as court_name, br.name as branch_name,
+        limit: int = 20,
+        offset: int = 0,
+    ) -> dict:
+        where = "WHERE 1=1"
+        params: dict = {}
+
+        if tenant_id:
+            where += " AND b.facility_id = :fid"
+            params["fid"] = tenant_id
+        if booking_date:
+            where += " AND b.date = :date"
+            params["date"] = booking_date
+        if court_id:
+            where += " AND b.court_id = :cid"
+            params["cid"] = court_id
+        if player_id:
+            where += " AND b.player_id = :pid"
+            params["pid"] = player_id
+        if status:
+            where += " AND b.status = :status"
+            params["status"] = status
+
+        count_query = f"SELECT COUNT(*) FROM booking b {where}"
+        count_result = await self.db.execute(text(count_query), params)
+        total = count_result.scalar_one()
+
+        query = f"""SELECT b.*, c.name as court_name, br.name as branch_name,
                           p.id as payment_id, p.status as payment_status, p.method as payment_method
                    FROM booking b
                    JOIN court c ON b.court_id = c.id
                    JOIN branch br ON c.branch_id = br.id
                    LEFT JOIN payment p ON b.id = p.booking_id AND p.status = 'captured'
-                   WHERE 1=1"""
-        params: dict = {}
-
-        if tenant_id:
-            query += " AND b.facility_id = :fid"
-            params["fid"] = tenant_id
-        if booking_date:
-            query += " AND b.date = :date"
-            params["date"] = booking_date
-        if court_id:
-            query += " AND b.court_id = :cid"
-            params["cid"] = court_id
-        if player_id:
-            query += " AND b.player_id = :pid"
-            params["pid"] = player_id
-        if status:
-            query += " AND b.status = :status"
-            params["status"] = status
-
-        query += " ORDER BY b.date, b.start_time"
+                   {where}
+                   ORDER BY b.date DESC, b.start_time
+                   LIMIT :lim OFFSET :off"""
+        params["lim"] = limit
+        params["off"] = offset
 
         result = await self.db.execute(text(query), params)
-        return [dict(r) for r in result.mappings().all()]
+        items = [dict(r) for r in result.mappings().all()]
+        return {"items": items, "total": total}
 
     async def get_schedule(self, tenant_id: int, schedule_date: date) -> list[dict]:
         result = await self.db.execute(

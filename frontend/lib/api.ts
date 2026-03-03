@@ -218,6 +218,9 @@ export const api = {
 
   getMe: () => request<User>("/api/v1/auth/me"),
 
+  updateMe: (data: { full_name?: string; phone?: string }) =>
+    request<User>("/api/v1/auth/me", { method: "PATCH", body: JSON.stringify(data) }),
+
   // Facilities
   getFacilities: () => request<Facility[]>("/api/v1/facilities"),
   getBranches: (facilityId: number) =>
@@ -225,9 +228,18 @@ export const api = {
 
   // Courts
   getCourts: (branchId?: number) =>
-    request<Court[]>(
+    request<{ items: Court[]; total: number }>(
       `/api/v1/courts${branchId ? `?branch_id=${branchId}` : ""}`,
-    ),
+    ).then((r) => r.items),
+
+  getCourtsPaginated: (params?: { branch_id?: number; limit?: number; offset?: number }) => {
+    const qs = new URLSearchParams();
+    if (params?.branch_id) qs.set("branch_id", String(params.branch_id));
+    if (params?.limit) qs.set("limit", String(params.limit));
+    if (params?.offset) qs.set("offset", String(params.offset));
+    const q = qs.toString();
+    return request<{ items: Court[]; total: number }>(`/api/v1/courts${q ? `?${q}` : ""}`);
+  },
 
   // Bookings
   getSlots: (courtId: number, date: string) =>
@@ -248,13 +260,15 @@ export const api = {
       { method: "POST", body: JSON.stringify(data) },
     ),
 
-  getBookings: (params?: { date?: string; court_id?: number; status?: string }) => {
+  getBookings: (params?: { date?: string; court_id?: number; status?: string; limit?: number; offset?: number }) => {
     const qs = new URLSearchParams();
     if (params?.date) qs.set("date", params.date);
     if (params?.court_id) qs.set("court_id", String(params.court_id));
     if (params?.status) qs.set("status", params.status);
+    if (params?.limit) qs.set("limit", String(params.limit));
+    if (params?.offset) qs.set("offset", String(params.offset));
     const q = qs.toString();
-    return request<BookingItem[]>(`/api/v1/bookings${q ? `?${q}` : ""}`);
+    return request<{ items: BookingItem[]; total: number }>(`/api/v1/bookings${q ? `?${q}` : ""}`);
   },
 
   cancelBooking: (id: number) =>
@@ -344,6 +358,21 @@ export const api = {
       method: "POST",
       body: JSON.stringify(data),
     }),
+
+  // Team / Users
+  getTeam: () => request<User[]>("/api/v1/users"),
+
+  inviteUser: (data: {
+    email: string;
+    full_name: string;
+    phone?: string;
+    role: string;
+    password: string;
+  }) =>
+    request<User>("/api/v1/users", { method: "POST", body: JSON.stringify(data) }),
+
+  updateUser: (id: number, data: { role?: string; is_active?: boolean }) =>
+    request<User>(`/api/v1/users/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
 
   // Dashboard
   getDashboardKPIs: () => request<DashboardKPI[]>("/api/v1/dashboard/kpis"),

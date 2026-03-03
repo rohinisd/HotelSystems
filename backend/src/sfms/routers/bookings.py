@@ -67,11 +67,13 @@ async def create_booking(
         raise HTTPException(status.HTTP_409_CONFLICT, str(e))
 
 
-@router.get("", response_model=list[BookingResponse])
+@router.get("")
 async def list_bookings(
     date: str | None = Query(None),
     court_id: int | None = Query(None),
     status_filter: str | None = Query(None, alias="status"),
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
     user: dict = Depends(get_current_user),
     tenant_id: int | None = Depends(get_tenant_id),
@@ -81,14 +83,15 @@ async def list_bookings(
     if user.get("role") == "player":
         player_id = int(user["sub"])
 
-    bookings = await engine.list_bookings(
+    return await engine.list_bookings(
         tenant_id=tenant_id,
         booking_date=date,
         court_id=court_id,
         player_id=player_id,
         status=status_filter,
+        limit=limit,
+        offset=offset,
     )
-    return bookings
 
 
 @router.patch("/{booking_id}/cancel")

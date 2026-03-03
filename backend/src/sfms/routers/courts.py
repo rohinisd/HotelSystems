@@ -10,33 +10,40 @@ from sfms.models.schemas import CourtCreate, CourtResponse, CourtUpdate, Pricing
 router = APIRouter(prefix="/courts", tags=["Courts"])
 
 
-@router.get("", response_model=list[CourtResponse])
+@router.get("")
 async def list_courts(
     branch_id: int | None = Query(None),
     sport: str | None = Query(None),
+    limit: int = Query(50, ge=1, le=100),
+    offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
     user: dict = Depends(get_current_user),
     tenant_id: int | None = Depends(get_tenant_id),
 ):
-    query = "SELECT * FROM court WHERE is_active = true"
+    where = "WHERE is_active = true"
     params: dict = {}
 
     if tenant_id:
-        query += " AND facility_id = :fid"
+        where += " AND facility_id = :fid"
         params["fid"] = tenant_id
-
     if branch_id:
-        query += " AND branch_id = :bid"
+        where += " AND branch_id = :bid"
         params["bid"] = branch_id
-
     if sport:
-        query += " AND sport = :sport"
+        where += " AND sport = :sport"
         params["sport"] = sport
 
-    query += " ORDER BY branch_id, name"
-    result = await db.execute(text(query), params)
-    rows = result.mappings().all()
-    return [CourtResponse(**r) for r in rows]
+    count_result = await db.execute(text(f"SELECT COUNT(*) FROM court {where}"), params)
+    total = count_result.scalar_one()
+
+    params["lim"] = limit
+    params["off"] = offset
+    result = await db.execute(
+        text(f"SELECT * FROM court {where} ORDER BY branch_id, name LIMIT :lim OFFSET :off"),
+        params,
+    )
+    items = [CourtResponse(**r) for r in result.mappings().all()]
+    return {"items": items, "total": total}
 
 
 @router.post("", response_model=CourtResponse, status_code=status.HTTP_201_CREATED)

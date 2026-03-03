@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { api, type User, type Court } from "@/lib/api";
 import { getRole } from "@/lib/auth";
 import { formatINR } from "@/lib/utils";
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,29 +14,55 @@ import {
   Shield,
   Trophy,
   Check,
+  Loader2,
 } from "lucide-react";
 
 export default function SettingsPage() {
   const [user, setUser] = useState<User | null>(null);
   const [courts, setCourts] = useState<Court[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
   const role = getRole();
 
   useEffect(() => {
     Promise.all([api.getMe(), api.getCourts()])
       .then(([u, c]) => {
         setUser(u);
+        setFullName(u.full_name);
+        setPhone(u.phone || "");
         setCourts(c);
       })
-      .catch(() => {})
+      .catch(() => toast.error("Failed to load settings"))
       .finally(() => setLoading(false));
   }, []);
 
-  function handleSave() {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  async function handleSave() {
+    if (!user) return;
+    const updates: { full_name?: string; phone?: string } = {};
+    if (fullName !== user.full_name) updates.full_name = fullName;
+    if (phone !== (user.phone || "")) updates.phone = phone || undefined;
+
+    if (Object.keys(updates).length === 0) {
+      toast.info("No changes to save");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const updated = await api.updateMe(updates);
+      setUser(updated);
+      toast.success("Profile updated");
+    } catch {
+      toast.error("Failed to save changes");
+    } finally {
+      setSaving(false);
+    }
   }
+
+  const hasChanges =
+    user && (fullName !== user.full_name || phone !== (user.phone || ""));
 
   if (loading) {
     return (
@@ -55,7 +82,6 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      {/* Profile Card */}
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
@@ -74,19 +100,26 @@ export default function SettingsPage() {
               <label className="text-sm font-medium text-slate-700">
                 Full Name
               </label>
-              <Input defaultValue={user?.full_name || ""} />
+              <Input
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+              />
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-slate-700">
                 Email
               </label>
-              <Input defaultValue={user?.email || ""} disabled />
+              <Input value={user?.email || ""} disabled />
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-slate-700">
                 Phone
               </label>
-              <Input defaultValue={user?.phone || ""} />
+              <Input
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="9876543210"
+              />
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-slate-700">
@@ -100,10 +133,14 @@ export default function SettingsPage() {
               </div>
             </div>
           </div>
-          <Button onClick={handleSave} className="bg-emerald-600 hover:bg-emerald-700">
-            {saved ? (
+          <Button
+            onClick={handleSave}
+            className="bg-emerald-600 hover:bg-emerald-700"
+            disabled={saving || !hasChanges}
+          >
+            {saving ? (
               <span className="flex items-center gap-1.5">
-                <Check className="h-4 w-4" /> Saved
+                <Loader2 className="h-4 w-4 animate-spin" /> Saving...
               </span>
             ) : (
               "Save Changes"
@@ -112,7 +149,6 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      {/* Facility Info (owner/manager only) */}
       {(role === "owner" || role === "manager") && (
         <Card>
           <CardHeader>
@@ -134,7 +170,7 @@ export default function SettingsPage() {
                 <label className="text-sm font-medium text-slate-700">
                   Facility Name
                 </label>
-                <Input defaultValue="TurfStack Arena" />
+                <Input defaultValue="TurfStack Arena" disabled />
               </div>
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-slate-700">
@@ -152,7 +188,6 @@ export default function SettingsPage() {
         </Card>
       )}
 
-      {/* Courts Overview */}
       {(role === "owner" || role === "manager") && courts.length > 0 && (
         <Card>
           <CardHeader>
@@ -207,7 +242,6 @@ export default function SettingsPage() {
         </Card>
       )}
 
-      {/* App Info */}
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center justify-between text-sm text-slate-500">

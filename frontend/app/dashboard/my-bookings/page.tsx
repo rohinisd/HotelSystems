@@ -20,8 +20,8 @@ export default function MyBookingsPage() {
   async function loadBookings() {
     setLoading(true);
     try {
-      const data = await api.getBookings({});
-      setBookings(data);
+      const data = await api.getBookings({ limit: 50 });
+      setBookings(data.items);
     } catch {
       setBookings([]);
     } finally {

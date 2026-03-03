@@ -27,11 +27,11 @@ function OwnerManagerDashboard() {
     const today = new Date().toISOString().split("T")[0];
     Promise.all([
       api.getDashboardKPIs().catch(() => []),
-      api.getBookings({ date: today }).catch(() => []),
+      api.getBookings({ date: today, limit: 10 }).catch(() => ({ items: [], total: 0 })),
     ])
       .then(([k, b]) => {
         setKpis(k);
-        setBookings(b.filter((x: BookingItem) => x.status === "confirmed"));
+        setBookings(b.items.filter((x: BookingItem) => x.status === "confirmed"));
       })
       .finally(() => setLoading(false));
   }, []);
@@ -125,8 +125,8 @@ function StaffDashboard() {
   useEffect(() => {
     const today = new Date().toISOString().split("T")[0];
     api
-      .getBookings({ date: today })
-      .then((b) => setBookings(b.filter((x) => x.status === "confirmed")))
+      .getBookings({ date: today, limit: 10 })
+      .then((b) => setBookings(b.items.filter((x) => x.status === "confirmed")))
       .catch(() => setBookings([]))
       .finally(() => setLoading(false));
   }, []);
@@ -224,8 +224,8 @@ function PlayerDashboard() {
 
   useEffect(() => {
     api
-      .getBookings({})
-      .then(setBookings)
+      .getBookings({ limit: 20 })
+      .then((b) => setBookings(b.items))
       .catch(() => setBookings([]))
       .finally(() => setLoading(false));
   }, []);

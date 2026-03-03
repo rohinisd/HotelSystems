@@ -16,8 +16,12 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+const PAGE_SIZE = 20;
+
 export default function BookingsPage() {
   const [bookings, setBookings] = useState<BookingItem[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(0);
   const [dateFilter, setDateFilter] = useState(new Date().toISOString().split("T")[0]);
   const [loading, setLoading] = useState(true);
   const [payingId, setPayingId] = useState<number | null>(null);
@@ -29,8 +33,13 @@ export default function BookingsPage() {
   const canRefund = role === "owner" || role === "manager";
 
   useEffect(() => {
-    loadBookings();
+    setPage(0);
+    loadBookings(0);
   }, [dateFilter]);
+
+  useEffect(() => {
+    loadBookings(page);
+  }, [page]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -42,13 +51,20 @@ export default function BookingsPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  async function loadBookings() {
+  async function loadBookings(p?: number) {
     setLoading(true);
     try {
-      const data = await api.getBookings({ date: dateFilter });
-      setBookings(data);
+      const currentPage = p ?? page;
+      const data = await api.getBookings({
+        date: dateFilter,
+        limit: PAGE_SIZE,
+        offset: currentPage * PAGE_SIZE,
+      });
+      setBookings(data.items);
+      setTotal(data.total);
     } catch {
       setBookings([]);
+      setTotal(0);
     } finally {
       setLoading(false);
     }
@@ -205,6 +221,32 @@ export default function BookingsPage() {
           )}
         </CardContent>
       </Card>
+
+      {total > PAGE_SIZE && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-slate-500">
+            Showing {page * PAGE_SIZE + 1}-{Math.min((page + 1) * PAGE_SIZE, total)} of {total}
+          </p>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page === 0}
+              onClick={() => setPage(page - 1)}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={(page + 1) * PAGE_SIZE >= total}
+              onClick={() => setPage(page + 1)}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -28,6 +28,11 @@ class TokenResponse(BaseModel):
     facility_id: int | None = None
 
 
+class ProfileUpdate(BaseModel):
+    full_name: str | None = Field(None, min_length=2, max_length=255)
+    phone: str | None = Field(None, max_length=20)
+
+
 class UserResponse(BaseModel):
     id: int
     email: str

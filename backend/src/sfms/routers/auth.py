@@ -2,7 +2,11 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+
+limiter = Limiter(key_func=get_remote_address)
 from jose import jwt
 from passlib.context import CryptContext
 from sqlalchemy import text
@@ -10,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from sfms.config import get_settings
 from sfms.dependencies import get_current_user, get_db
-from sfms.models.schemas import LoginRequest, RegisterRequest, TokenResponse, UserResponse
+from sfms.models.schemas import LoginRequest, ProfileUpdate, RegisterRequest, TokenResponse, UserResponse
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -31,7 +35,8 @@ def _create_token(user_id: int, email: str, role: str, facility_id: int | None) 
 
 
 @router.post("/login", response_model=TokenResponse)
-async def login(req: LoginRequest, db: AsyncSession = Depends(get_db)):
+@limiter.limit("5/minute")
+async def login(request: Request, req: LoginRequest, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         text("SELECT id, email, hashed_password, role, facility_id, is_active FROM users WHERE email = :email"),
         {"email": req.email},
@@ -56,7 +61,8 @@ async def login(req: LoginRequest, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
-async def register(req: RegisterRequest, db: AsyncSession = Depends(get_db)):
+@limiter.limit("5/minute")
+async def register(request: Request, req: RegisterRequest, db: AsyncSession = Depends(get_db)):
     existing = await db.execute(
         text("SELECT id FROM users WHERE email = :email"),
         {"email": req.email},
@@ -121,6 +127,30 @@ async def get_me(
         text("SELECT id, email, full_name, phone, role, facility_id, is_active FROM users WHERE id = :id"),
         {"id": int(user["sub"])},
     )
+    row = result.mappings().first()
+    if not row:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "User not found")
+    return UserResponse(**row)
+
+
+@router.patch("/me", response_model=UserResponse)
+async def update_me(
+    req: ProfileUpdate,
+    db: AsyncSession = Depends(get_db),
+    user: dict = Depends(get_current_user),
+):
+    user_id = int(user["sub"])
+    updates = req.model_dump(exclude_unset=True)
+    if not updates:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "No fields to update")
+
+    set_clauses = ", ".join(f"{k} = :{k}" for k in updates)
+    updates["id"] = user_id
+    result = await db.execute(
+        text(f"UPDATE users SET {set_clauses} WHERE id = :id RETURNING id, email, full_name, phone, role, facility_id, is_active"),
+        updates,
+    )
+    await db.commit()
     row = result.mappings().first()
     if not row:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "User not found")

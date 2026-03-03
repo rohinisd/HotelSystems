@@ -18,8 +18,38 @@ export default function LoginPage() {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
 
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  function validate(): boolean {
+    const errors: Record<string, string> = {};
+
+    if (isRegister) {
+      if (fullName.trim().length < 2) errors.fullName = "Name must be at least 2 characters";
+      if (phone && !/^\d{10}$/.test(phone)) errors.phone = "Enter a valid 10-digit phone number";
+      if (password.length < 6) errors.password = "Password must be at least 6 characters";
+      else if (password.length < 8) errors.password = "Use 8+ characters for a stronger password";
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = "Enter a valid email address";
+
+    setFieldErrors(errors);
+    const hasBlocking = Object.entries(errors).some(
+      ([, v]) => !v.startsWith("Use ") // warnings (like "Use 8+") are non-blocking
+    );
+    return !hasBlocking;
+  }
+
+  function getPasswordStrength(): { label: string; color: string; width: string } | null {
+    if (!isRegister || !password) return null;
+    if (password.length >= 12) return { label: "Strong", color: "bg-emerald-500", width: "w-full" };
+    if (password.length >= 8) return { label: "Good", color: "bg-blue-500", width: "w-2/3" };
+    if (password.length >= 6) return { label: "Weak", color: "bg-amber-500", width: "w-1/3" };
+    return { label: "Too short", color: "bg-red-500", width: "w-1/6" };
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!validate()) return;
     setLoading(true);
     setError("");
 
@@ -38,6 +68,8 @@ export default function LoginPage() {
       setLoading(false);
     }
   }
+
+  const passwordStrength = getPasswordStrength();
 
   function fillDemo() {
     setEmail("owner@turfstack.in");
@@ -127,9 +159,13 @@ export default function LoginPage() {
                     id="fullName"
                     placeholder="Girish Hiremath"
                     value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
+                    onChange={(e) => { setFullName(e.target.value); setFieldErrors((p) => ({ ...p, fullName: "" })); }}
                     required
+                    className={fieldErrors.fullName ? "border-red-400" : ""}
                   />
+                  {fieldErrors.fullName && (
+                    <p className="text-xs text-red-500">{fieldErrors.fullName}</p>
+                  )}
                 </div>
                 <div className="space-y-1.5">
                   <label
@@ -143,8 +179,12 @@ export default function LoginPage() {
                     type="tel"
                     placeholder="9876543210"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={(e) => { setPhone(e.target.value); setFieldErrors((p) => ({ ...p, phone: "" })); }}
+                    className={fieldErrors.phone ? "border-red-400" : ""}
                   />
+                  {fieldErrors.phone && (
+                    <p className="text-xs text-red-500">{fieldErrors.phone}</p>
+                  )}
                 </div>
               </>
             )}
@@ -161,9 +201,13 @@ export default function LoginPage() {
                 type="email"
                 placeholder="you@example.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => { setEmail(e.target.value); setFieldErrors((p) => ({ ...p, email: "" })); }}
                 required
+                className={fieldErrors.email ? "border-red-400" : ""}
               />
+              {fieldErrors.email && (
+                <p className="text-xs text-red-500">{fieldErrors.email}</p>
+              )}
             </div>
 
             <div className="space-y-1.5">
@@ -176,11 +220,25 @@ export default function LoginPage() {
               <Input
                 id="password"
                 type="password"
-                placeholder="Enter your password"
+                placeholder={isRegister ? "Min 6 characters" : "Enter your password"}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => { setPassword(e.target.value); setFieldErrors((p) => ({ ...p, password: "" })); }}
                 required
+                className={fieldErrors.password && !fieldErrors.password.startsWith("Use ") ? "border-red-400" : ""}
               />
+              {fieldErrors.password && (
+                <p className={`text-xs ${fieldErrors.password.startsWith("Use ") ? "text-amber-500" : "text-red-500"}`}>
+                  {fieldErrors.password}
+                </p>
+              )}
+              {isRegister && passwordStrength && (
+                <div className="space-y-1">
+                  <div className="h-1.5 w-full rounded-full bg-slate-100">
+                    <div className={`h-full rounded-full transition-all ${passwordStrength.color} ${passwordStrength.width}`} />
+                  </div>
+                  <p className="text-[10px] text-slate-500">{passwordStrength.label}</p>
+                </div>
+              )}
             </div>
 
             <Button

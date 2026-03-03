@@ -1,6 +1,10 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+
+limiter = Limiter(key_func=get_remote_address)
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from sfms.dependencies import get_current_user, get_db, get_tenant_id, require_roles
@@ -10,7 +14,9 @@ router = APIRouter(prefix="/payments", tags=["Payments"])
 
 
 @router.post("/order/{booking_id}")
+@limiter.limit("10/minute")
 async def create_payment_order(
+    request: Request,
     booking_id: int,
     db: AsyncSession = Depends(get_db),
     user: dict = Depends(get_current_user),
@@ -23,6 +29,7 @@ async def create_payment_order(
 
 
 @router.post("/verify")
+@limiter.limit("10/minute")
 async def verify_payment(
     request: Request,
     db: AsyncSession = Depends(get_db),

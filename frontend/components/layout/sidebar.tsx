@@ -13,6 +13,7 @@ import {
   LogOut,
   Ticket,
   GitBranch,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { clearAuth, getRole } from "@/lib/auth";
@@ -72,6 +73,12 @@ const navItems: NavItem[] = [
     href: "/dashboard/revenue",
     icon: BarChart3,
     roles: ["owner", "manager", "accountant"],
+  },
+  {
+    label: "Team",
+    href: "/dashboard/team",
+    icon: Users,
+    roles: ["owner"],
   },
   {
     label: "Branches",
