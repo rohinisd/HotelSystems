@@ -1,0 +1,67 @@
+name: E2E Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Target URL to test against"
+        required: false
+        default: "https://turfstack.vercel.app"
+  schedule:
+    - cron: "0 6 * * 1"
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+        working-directory: frontend
+
+      - name: Wait for target to be healthy
+        run: |
+          URL="${{ github.event.inputs.base_url || 'https://turfstack.vercel.app' }}"
+          echo "Testing against: $URL"
+          for i in $(seq 1 5); do
+            if curl -sf "$URL" > /dev/null 2>&1; then
+              echo "Target is healthy"
+              break
+            fi
+            echo "Attempt $i: waiting 10s..."
+            sleep 10
+          done
+
+      - name: Run E2E tests
+        run: npx playwright test
+        working-directory: frontend
+        env:
+          BASE_URL: ${{ github.event.inputs.base_url || 'https://turfstack.vercel.app' }}
+          CI: true
+
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report-${{ github.run_id }}
+          path: frontend/playwright-report/
+          retention-days: 14
+
+      - name: Upload failure artifacts
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-failures-${{ github.run_id }}
+          path: |
+            frontend/test-results/
+          retention-days: 7

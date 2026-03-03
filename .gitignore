@@ -24,6 +24,12 @@ out/
 # Test credentials & guides (sensitive)
 TEST_CREDENTIALS.md
 TESTING_GUIDE.md
+.env.test
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
 
 # Docker
 postgres_data/
