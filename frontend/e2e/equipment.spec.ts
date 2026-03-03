@@ -13,7 +13,7 @@ test.describe("Equipment Management as Owner", () => {
     await expect(page.getByText("Total Items")).toBeVisible();
     await expect(page.getByText("Low Stock")).toBeVisible();
     await expect(page.getByText("Out of Stock")).toBeVisible();
-    await expect(page.getByText("Needs Repair")).toBeVisible();
+    await expect(page.locator("p").filter({ hasText: "Needs Repair" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Add Equipment" })).toBeVisible();
   });
 
