@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import traceback
 
+import sentry_sdk
 import structlog
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -22,6 +23,18 @@ limiter = Limiter(key_func=get_remote_address, default_limits=["5/second"])
 
 def create_app() -> FastAPI:
     settings = get_settings()
+    if settings.sentry_dsn:
+        sentry_sdk.init(
+            dsn=settings.sentry_dsn,
+            traces_sample_rate=0.1,
+            environment=settings.app_env,
+        )
+    if settings.app_env == "production" and (
+        settings.jwt_secret == "CHANGE_ME" or len(settings.jwt_secret) < 32
+    ):
+        raise ValueError(
+            "JWT_SECRET must be set to a secure value (min 32 chars) when APP_ENV=production"
+        )
     setup_logging(app_env=settings.app_env)
 
     app = FastAPI(
@@ -37,7 +50,8 @@ def create_app() -> FastAPI:
     @app.exception_handler(Exception)
     async def unhandled_exception_handler(request: Request, exc: Exception):
         logger.error("unhandled_error", path=request.url.path, error=str(exc), tb=traceback.format_exc())
-        return JSONResponse(status_code=500, content={"detail": str(exc)})
+        detail = "Internal server error" if settings.app_env != "dev" else str(exc)
+        return JSONResponse(status_code=500, content={"detail": detail})
 
     app.add_middleware(
         CORSMiddleware,

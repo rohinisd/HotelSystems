@@ -104,36 +104,36 @@ export default function BranchesPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700">Branch Name</label>
-                  <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Main Branch" required />
+                  <label htmlFor="branchName" className="text-sm font-medium text-slate-700">Branch Name</label>
+                  <Input id="branchName" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Main Branch" required />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700">Phone</label>
-                  <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="9876543210" />
+                  <label htmlFor="phone" className="text-sm font-medium text-slate-700">Phone</label>
+                  <Input id="phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="9876543210" />
                 </div>
                 <div className="space-y-1.5 sm:col-span-2">
-                  <label className="text-sm font-medium text-slate-700">Address</label>
-                  <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="123 Sports Road" />
+                  <label htmlFor="address" className="text-sm font-medium text-slate-700">Address</label>
+                  <Input id="address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="123 Sports Road" />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700">City</label>
-                  <Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} placeholder="Hyderabad" />
+                  <label htmlFor="city" className="text-sm font-medium text-slate-700">City</label>
+                  <Input id="city" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} placeholder="Hyderabad" />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700">State</label>
-                  <Input value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })} placeholder="Telangana" />
+                  <label htmlFor="state" className="text-sm font-medium text-slate-700">State</label>
+                  <Input id="state" value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })} placeholder="Telangana" />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700">Pincode</label>
-                  <Input value={form.pincode} onChange={(e) => setForm({ ...form, pincode: e.target.value })} placeholder="500032" maxLength={10} />
+                  <label htmlFor="pincode" className="text-sm font-medium text-slate-700">Pincode</label>
+                  <Input id="pincode" value={form.pincode} onChange={(e) => setForm({ ...form, pincode: e.target.value })} placeholder="500032" maxLength={10} />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700">Opening Time</label>
-                  <Input type="time" value={form.opening_time} onChange={(e) => setForm({ ...form, opening_time: e.target.value })} />
+                  <label htmlFor="openingTime" className="text-sm font-medium text-slate-700">Opening Time</label>
+                  <Input id="openingTime" type="time" value={form.opening_time} onChange={(e) => setForm({ ...form, opening_time: e.target.value })} />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700">Closing Time</label>
-                  <Input type="time" value={form.closing_time} onChange={(e) => setForm({ ...form, closing_time: e.target.value })} />
+                  <label htmlFor="closingTime" className="text-sm font-medium text-slate-700">Closing Time</label>
+                  <Input id="closingTime" type="time" value={form.closing_time} onChange={(e) => setForm({ ...form, closing_time: e.target.value })} />
                 </div>
               </div>
               {error && <p className="text-sm text-red-600">{error}</p>}

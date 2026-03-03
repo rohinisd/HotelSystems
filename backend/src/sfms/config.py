@@ -32,6 +32,7 @@ class Settings(BaseSettings):
 
     cors_origins: str = '["http://localhost:3000"]'
     sms_api_key: str = ""
+    sentry_dsn: str = ""
 
     @property
     def cors_origin_list(self) -> list[str]:

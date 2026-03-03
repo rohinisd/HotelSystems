@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -61,9 +61,13 @@ async def create_facility(
 @router.get("/{facility_id}/branches", response_model=list[BranchResponse])
 async def list_branches(
     facility_id: int,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     user: dict = Depends(get_current_user),
 ):
+    tenant_id = getattr(request.state, "tenant_id", None)
+    if tenant_id is None or tenant_id != facility_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
     result = await db.execute(
         text("SELECT * FROM branch WHERE facility_id = :fid AND is_active = true ORDER BY name"),
         {"fid": facility_id},
@@ -75,10 +79,14 @@ async def list_branches(
 @router.post("/{facility_id}/branches", response_model=BranchResponse, status_code=status.HTTP_201_CREATED)
 async def create_branch(
     facility_id: int,
+    request: Request,
     req: BranchCreate,
     db: AsyncSession = Depends(get_db),
     user: dict = Depends(require_roles("owner", "manager")),
 ):
+    tenant_id = getattr(request.state, "tenant_id", None)
+    if tenant_id is None or tenant_id != facility_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
     result = await db.execute(
         text(
             """INSERT INTO branch (facility_id, name, address, city, state, pincode, phone, opening_time, closing_time)

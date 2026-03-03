@@ -162,8 +162,8 @@ export default function CourtsPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700">Court Name</label>
-                  <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Court A" required />
+                  <label htmlFor="courtName" className="text-sm font-medium text-slate-700">Court Name</label>
+                  <Input id="courtName" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Court A" required />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium text-slate-700">Sport</label>
@@ -176,13 +176,14 @@ export default function CourtsPage() {
                   </select>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700">Surface Type</label>
-                  <Input value={form.surface_type} onChange={(e) => setForm({ ...form, surface_type: e.target.value })} placeholder="e.g. Synthetic, Clay" />
+                  <label htmlFor="surfaceType" className="text-sm font-medium text-slate-700">Surface Type</label>
+                  <Input id="surfaceType" value={form.surface_type} onChange={(e) => setForm({ ...form, surface_type: e.target.value })} placeholder="e.g. Synthetic, Clay" />
                 </div>
                 {!editId && (
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-slate-700">Branch</label>
+                    <label htmlFor="branch" className="text-sm font-medium text-slate-700">Branch</label>
                     <select
+                      id="branch"
                       value={form.branch_id}
                       onChange={(e) => setForm({ ...form, branch_id: parseInt(e.target.value) })}
                       className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
@@ -192,16 +193,17 @@ export default function CourtsPage() {
                   </div>
                 )}
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700">Hourly Rate (INR)</label>
-                  <Input type="number" value={form.hourly_rate} onChange={(e) => setForm({ ...form, hourly_rate: e.target.value })} placeholder="800" required min="1" />
+                  <label htmlFor="hourlyRate" className="text-sm font-medium text-slate-700">Hourly Rate (INR)</label>
+                  <Input id="hourlyRate" type="number" value={form.hourly_rate} onChange={(e) => setForm({ ...form, hourly_rate: e.target.value })} placeholder="800" required min="1" />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700">Peak Hour Rate (INR)</label>
-                  <Input type="number" value={form.peak_hour_rate} onChange={(e) => setForm({ ...form, peak_hour_rate: e.target.value })} placeholder="1200" />
+                  <label htmlFor="peakHourRate" className="text-sm font-medium text-slate-700">Peak Hour Rate (INR)</label>
+                  <Input id="peakHourRate" type="number" value={form.peak_hour_rate} onChange={(e) => setForm({ ...form, peak_hour_rate: e.target.value })} placeholder="1200" />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700">Slot Duration (min)</label>
+                  <label htmlFor="slotDuration" className="text-sm font-medium text-slate-700">Slot Duration (min)</label>
                   <select
+                    id="slotDuration"
                     value={form.slot_duration_minutes}
                     onChange={(e) => setForm({ ...form, slot_duration_minutes: e.target.value })}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
@@ -210,9 +212,10 @@ export default function CourtsPage() {
                   </select>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700">Indoor</label>
+                  <label htmlFor="indoor" className="text-sm font-medium text-slate-700">Indoor</label>
                   <div className="flex items-center gap-2 h-10">
                     <input
+                      id="indoor"
                       type="checkbox"
                       checked={form.is_indoor}
                       onChange={(e) => setForm({ ...form, is_indoor: e.target.checked })}

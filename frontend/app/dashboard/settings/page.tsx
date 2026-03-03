@@ -97,25 +97,27 @@ export default function SettingsPage() {
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-700">
+              <label htmlFor="fullName" className="text-sm font-medium text-slate-700">
                 Full Name
               </label>
               <Input
+                id="fullName"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-700">
+              <label htmlFor="email" className="text-sm font-medium text-slate-700">
                 Email
               </label>
-              <Input value={user?.email || ""} disabled />
+              <Input id="email" value={user?.email || ""} disabled />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-700">
+              <label htmlFor="phone" className="text-sm font-medium text-slate-700">
                 Phone
               </label>
               <Input
+                id="phone"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="9876543210"
@@ -173,10 +175,10 @@ export default function SettingsPage() {
                 <Input defaultValue="TurfStack Arena" disabled />
               </div>
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-slate-700">
+                <label htmlFor="plan" className="text-sm font-medium text-slate-700">
                   Plan
                 </label>
-                <div className="flex items-center gap-2 h-10 px-3 rounded-md border bg-slate-50">
+                <div id="plan" className="flex items-center gap-2 h-10 px-3 rounded-md border bg-slate-50">
                   <span className="text-sm font-medium">Free</span>
                   <span className="ml-auto text-xs text-emerald-600 font-medium bg-emerald-50 px-2 py-0.5 rounded-full">
                     Active

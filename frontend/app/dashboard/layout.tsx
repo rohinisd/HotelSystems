@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { MobileNav } from "@/components/layout/mobile-nav";
-import { isAuthenticated } from "@/lib/auth";
+import { useAuth } from "@/lib/auth-context";
 
 export default function DashboardLayout({
   children,
@@ -15,16 +15,18 @@ export default function DashboardLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [checking, setChecking] = useState(true);
   const router = useRouter();
+  const { isAuthenticated, initialized } = useAuth();
 
   useEffect(() => {
-    if (!isAuthenticated()) {
+    if (!initialized) return;
+    if (!isAuthenticated) {
       router.replace("/login");
     } else {
       setChecking(false);
     }
-  }, [router]);
+  }, [isAuthenticated, initialized, router]);
 
-  if (checking) {
+  if (!initialized || checking) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-emerald-50">
         <div className="flex flex-col items-center gap-3">

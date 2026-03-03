@@ -142,10 +142,11 @@ export default function TeamPage() {
             <form onSubmit={handleInvite} className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700">
+                  <label htmlFor="fullName" className="text-sm font-medium text-slate-700">
                     Full Name *
                   </label>
                   <Input
+                    id="fullName"
                     required
                     value={form.full_name}
                     onChange={(e) =>
@@ -169,10 +170,11 @@ export default function TeamPage() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700">
+                  <label htmlFor="phone" className="text-sm font-medium text-slate-700">
                     Phone
                   </label>
                   <Input
+                    id="phone"
                     value={form.phone}
                     onChange={(e) =>
                       setForm({ ...form, phone: e.target.value })
@@ -181,10 +183,11 @@ export default function TeamPage() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700">
+                  <label htmlFor="role" className="text-sm font-medium text-slate-700">
                     Role *
                   </label>
                   <select
+                    id="role"
                     className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
                     value={form.role}
                     onChange={(e) =>
@@ -197,10 +200,11 @@ export default function TeamPage() {
                   </select>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700">
+                  <label htmlFor="password" className="text-sm font-medium text-slate-700">
                     Password *
                   </label>
                   <Input
+                    id="password"
                     required
                     type="password"
                     value={form.password}
