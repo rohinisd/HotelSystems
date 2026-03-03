@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { SportSelector } from "@/components/booking/sport-selector";
 import { SlotGrid } from "@/components/booking/slot-grid";
+import { Loader2 } from "lucide-react";
 
 interface Slot {
   start_time: string;
@@ -39,20 +40,21 @@ export default function BookPage() {
   const [error, setError] = useState("");
   const [playerName, setPlayerName] = useState("");
   const [playerPhone, setPlayerPhone] = useState("");
+  const [initialLoading, setInitialLoading] = useState(true);
 
   useEffect(() => {
     const facilityId = getFacilityId();
     if (facilityId) {
       setSelectedFacility(facilityId);
-      api.getBranches(facilityId).then(setBranches).catch(() => {});
+      api.getBranches(facilityId).then(setBranches).catch(() => {}).finally(() => setInitialLoading(false));
     } else {
-      api.getFacilities().then((facs) => {
+      api.getFacilities().then(async (facs) => {
         setFacilities(facs);
         if (facs.length === 1) {
           setSelectedFacility(facs[0].id);
-          api.getBranches(facs[0].id).then(setBranches).catch(() => {});
+          await api.getBranches(facs[0].id).then(setBranches).catch(() => {});
         }
-      }).catch(() => {});
+      }).catch(() => {}).finally(() => setInitialLoading(false));
     }
   }, []);
 
@@ -115,6 +117,17 @@ export default function BookPage() {
   }
 
   const showFacilityPicker = !getFacilityId() && facilities.length > 1;
+
+  if (initialLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-50">
+        <div className="text-center space-y-3">
+          <Loader2 className="h-8 w-8 animate-spin text-emerald-500 mx-auto" />
+          <p className="text-slate-500">Loading venues...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 p-4 sm:p-8">

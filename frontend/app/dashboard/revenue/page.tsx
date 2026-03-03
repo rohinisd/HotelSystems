@@ -123,10 +123,23 @@ export default function RevenuePage() {
       .finally(() => setLoading(false));
   }, []);
 
-  function handleExport() {
+  async function handleExport() {
     const token = localStorage.getItem("sfms_token");
     const url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001"}/api/v1/dashboard/export/revenue`;
-    window.open(`${url}?token=${token}`, "_blank");
+    try {
+      const res = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Export failed");
+      const blob = await res.blob();
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "revenue_export.csv";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    } catch {
+      alert("Failed to export. Please try again.");
+    }
   }
 
   const totalRevenue = trend.reduce((sum, d) => sum + d.revenue, 0);

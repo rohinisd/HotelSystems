@@ -3,10 +3,6 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from slowapi import Limiter
-from slowapi.util import get_remote_address
-
-limiter = Limiter(key_func=get_remote_address)
 from jose import jwt
 from passlib.context import CryptContext
 from sqlalchemy import text
@@ -15,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sfms.config import get_settings
 from sfms.dependencies import get_current_user, get_db
 from sfms.models.schemas import LoginRequest, ProfileUpdate, RegisterRequest, TokenResponse, UserResponse
+from sfms.rate_limit import limiter
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -94,7 +91,9 @@ async def register(request: Request, req: RegisterRequest, db: AsyncSession = De
 
 
 @router.post("/refresh", response_model=TokenResponse)
+@limiter.limit("10/minute")
 async def refresh_token(
+    request: Request,
     db: AsyncSession = Depends(get_db),
     user: dict = Depends(get_current_user),
 ):

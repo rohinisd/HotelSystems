@@ -7,18 +7,16 @@ import structlog
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
-from slowapi.util import get_remote_address
 
 from sfms.config import get_settings
 from sfms.middleware.tenant import TenantMiddleware
+from sfms.rate_limit import limiter
 from sfms.routers import auth, bookings, courts, dashboard, equipment, facilities, health, payments, users
 from sfms.utils.logger import setup_logging
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger(__name__)
-
-limiter = Limiter(key_func=get_remote_address, default_limits=["5/second"])
 
 
 def create_app() -> FastAPI:

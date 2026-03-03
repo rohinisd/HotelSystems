@@ -52,7 +52,12 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 
   if (!res.ok) {
     const text = await res.text();
-    throw new ApiError(res.status, text);
+    let message = text;
+    try {
+      const json = JSON.parse(text);
+      if (json.detail) message = typeof json.detail === "string" ? json.detail : JSON.stringify(json.detail);
+    } catch {}
+    throw new ApiError(res.status, message);
   }
 
   return res.json();

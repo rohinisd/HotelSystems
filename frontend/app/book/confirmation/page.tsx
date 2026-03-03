@@ -32,9 +32,18 @@ function ConfirmationContent() {
     try {
       const paymentOrder = await api.createPaymentOrder(parseInt(bookingId));
       setOrder(paymentOrder);
-      await loadRazorpayScript();
+      const loaded = await loadRazorpayScript();
+      if (!loaded) {
+        setError("Could not load payment gateway. You can pay at the venue.");
+      }
       setState("ready");
-    } catch (err) {
+    } catch (err: any) {
+      const msg = err?.message || err?.detail || "";
+      if (msg.toLowerCase().includes("not configured")) {
+        setError("Online payments are not available right now. You can pay at the venue.");
+      } else {
+        setError("Could not set up payment. You can pay at the venue or retry.");
+      }
       setState("ready");
     }
   }, [bookingId]);
@@ -162,9 +171,9 @@ function ConfirmationContent() {
               )}
             </Button>
 
-            {state === "failed" && (
-              <Button onClick={handlePay} variant="outline" className="w-full" disabled={!order}>
-                Retry Payment
+            {(state === "failed" || (state === "ready" && !order)) && (
+              <Button onClick={initPayment} variant="outline" className="w-full">
+                Retry Payment Setup
               </Button>
             )}
 

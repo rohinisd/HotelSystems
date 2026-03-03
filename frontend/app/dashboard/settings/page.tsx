@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { api, type User, type Court } from "@/lib/api";
-import { getRole } from "@/lib/auth";
+import { api, type User, type Court, type Facility } from "@/lib/api";
+import { getRole, getFacilityId } from "@/lib/auth";
 import { formatINR } from "@/lib/utils";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,30 +13,38 @@ import {
   Building2,
   Shield,
   Trophy,
-  Check,
   Loader2,
 } from "lucide-react";
 
 export default function SettingsPage() {
   const [user, setUser] = useState<User | null>(null);
+  const [facility, setFacility] = useState<Facility | null>(null);
   const [courts, setCourts] = useState<Court[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const role = getRole();
+  const facilityId = getFacilityId();
 
   useEffect(() => {
-    Promise.all([api.getMe(), api.getCourts()])
-      .then(([u, c]) => {
+    const promises: Promise<any>[] = [api.getMe(), api.getCourts()];
+    if (facilityId) {
+      promises.push(
+        api.getFacilities().then((facs) => facs.find((f) => f.id === facilityId) || null)
+      );
+    }
+    Promise.all(promises)
+      .then(([u, c, f]) => {
         setUser(u);
         setFullName(u.full_name);
         setPhone(u.phone || "");
         setCourts(c);
+        if (f) setFacility(f);
       })
       .catch(() => toast.error("Failed to load settings"))
       .finally(() => setLoading(false));
-  }, []);
+  }, [facilityId]);
 
   async function handleSave() {
     if (!user) return;
@@ -172,16 +180,16 @@ export default function SettingsPage() {
                 <label className="text-sm font-medium text-slate-700">
                   Facility Name
                 </label>
-                <Input defaultValue="TurfStack Arena" disabled />
+                <Input value={facility?.name || "—"} disabled />
               </div>
               <div className="space-y-1.5">
                 <label htmlFor="plan" className="text-sm font-medium text-slate-700">
                   Plan
                 </label>
                 <div id="plan" className="flex items-center gap-2 h-10 px-3 rounded-md border bg-slate-50">
-                  <span className="text-sm font-medium">Free</span>
+                  <span className="text-sm font-medium capitalize">{facility?.subscription_plan || "Free"}</span>
                   <span className="ml-auto text-xs text-emerald-600 font-medium bg-emerald-50 px-2 py-0.5 rounded-full">
-                    Active
+                    {facility?.is_active ? "Active" : "Inactive"}
                   </span>
                 </div>
               </div>
@@ -248,7 +256,7 @@ export default function SettingsPage() {
         <CardContent className="p-6">
           <div className="flex items-center justify-between text-sm text-slate-500">
             <span>TurfStack v0.1.0</span>
-            <span>API: sfms-api.fly.dev</span>
+            <span>API: {(process.env.NEXT_PUBLIC_API_URL || "").replace(/^https?:\/\//, "") || "localhost"}</span>
           </div>
         </CardContent>
       </Card>

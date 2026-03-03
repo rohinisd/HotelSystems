@@ -89,6 +89,19 @@ class PaymentService:
         await self.db.commit()
         return {"status": "captured", "payment_id": payment_id}
 
+    async def capture_payment_from_webhook(self, order_id: str, payment_id: str) -> dict:
+        """Capture payment from a webhook event (signature already verified at HTTP layer)."""
+        await self.db.execute(
+            text(
+                """UPDATE payment
+                   SET status = 'captured', razorpay_payment_id = :pid, paid_at = NOW()
+                   WHERE razorpay_order_id = :oid AND status = 'pending'"""
+            ),
+            {"pid": payment_id, "oid": order_id},
+        )
+        await self.db.commit()
+        return {"status": "captured", "payment_id": payment_id}
+
     async def record_cash_payment(self, booking_id: int, facility_id: int) -> dict:
         existing = await self.db.execute(
             text("SELECT id FROM payment WHERE booking_id = :bid AND status = 'captured'"),

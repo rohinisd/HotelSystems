@@ -29,6 +29,7 @@ class Settings(BaseSettings):
 
     razorpay_key_id: str = ""
     razorpay_key_secret: str = ""
+    razorpay_webhook_secret: str = ""
 
     cors_origins: str = '["http://localhost:3000"]'
     sms_api_key: str = ""
