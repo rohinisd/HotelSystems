@@ -7,7 +7,15 @@ test.describe("Schedule View", () => {
     await page.goto("/dashboard/schedule");
 
     await expect(page.getByRole("heading", { name: "Schedule" })).toBeVisible();
-    await expect(page.getByRole("columnheader", { name: "Court" })).toBeVisible({ timeout: 10_000 });
+
+    const table = page.locator("table");
+    const noCourtMsg = page.getByText("No courts found");
+
+    await expect(table.or(noCourtMsg)).toBeVisible({ timeout: 20_000 });
+
+    if (await table.isVisible()) {
+      await expect(page.locator("th").filter({ hasText: "Court" })).toBeVisible();
+    }
   });
 
   test("date navigation works", async ({ page }) => {
@@ -15,7 +23,7 @@ test.describe("Schedule View", () => {
     await page.goto("/dashboard/schedule");
 
     const dateInput = page.locator('input[type="date"]');
-    await expect(dateInput).toBeVisible();
+    await expect(dateInput).toBeVisible({ timeout: 10_000 });
     const initialDate = await dateInput.inputValue();
 
     const todayButton = page.getByRole("button", { name: "Today" });

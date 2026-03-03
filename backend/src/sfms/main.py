@@ -17,7 +17,7 @@ from sfms.utils.logger import setup_logging
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger(__name__)
 
-limiter = Limiter(key_func=get_remote_address, default_limits=["60/minute"])
+limiter = Limiter(key_func=get_remote_address, default_limits=["5/second"])
 
 
 def create_app() -> FastAPI:

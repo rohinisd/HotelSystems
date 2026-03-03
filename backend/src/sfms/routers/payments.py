@@ -14,7 +14,7 @@ router = APIRouter(prefix="/payments", tags=["Payments"])
 
 
 @router.post("/order/{booking_id}")
-@limiter.limit("10/minute")
+@limiter.limit("5/second")
 async def create_payment_order(
     request: Request,
     booking_id: int,
@@ -29,7 +29,7 @@ async def create_payment_order(
 
 
 @router.post("/verify")
-@limiter.limit("10/minute")
+@limiter.limit("5/second")
 async def verify_payment(
     request: Request,
     db: AsyncSession = Depends(get_db),

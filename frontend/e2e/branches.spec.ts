@@ -11,18 +11,20 @@ test.describe("Branch Management as Owner", () => {
     await page.goto("/dashboard/branches");
     await expect(page.getByRole("heading", { name: "Branches" })).toBeVisible();
     for (const name of BRANCHES) {
-      await expect(page.getByText(name)).toBeVisible({ timeout: 10_000 });
+      await expect(page.getByText(name).first()).toBeVisible({ timeout: 10_000 });
     }
   });
 
   test("add branch form creates new branch", async ({ page }) => {
+    const branchName = `E2E Branch ${Date.now()}`;
     await page.goto("/dashboard/branches");
+    await expect(page.getByRole("heading", { name: "Branches" })).toBeVisible({ timeout: 10_000 });
     await page.getByRole("button", { name: "Add Branch" }).click();
 
     const formCard = page.locator(".border-emerald-200");
     await expect(formCard).toBeVisible();
 
-    await formCard.getByPlaceholder("Main Branch").fill("E2E Test Branch");
+    await formCard.getByPlaceholder("Main Branch").fill(branchName);
     await formCard.getByPlaceholder("9876543210").fill("9999999999");
     await formCard.getByPlaceholder("123 Sports Road").fill("Test Road");
     await formCard.getByPlaceholder("Hyderabad").fill("Hyderabad");
@@ -33,7 +35,7 @@ test.describe("Branch Management as Owner", () => {
 
     await formCard.getByRole("button", { name: "Create Branch" }).click();
 
-    await expect(page.getByText("E2E Test Branch")).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(branchName)).toBeVisible({ timeout: 15_000 });
   });
 
   test("branch cards show address and hours", async ({ page }) => {

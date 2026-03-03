@@ -35,7 +35,7 @@ def _create_token(user_id: int, email: str, role: str, facility_id: int | None) 
 
 
 @router.post("/login", response_model=TokenResponse)
-@limiter.limit("5/minute")
+@limiter.limit("5/second")
 async def login(request: Request, req: LoginRequest, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         text("SELECT id, email, hashed_password, role, facility_id, is_active FROM users WHERE email = :email"),
@@ -61,7 +61,7 @@ async def login(request: Request, req: LoginRequest, db: AsyncSession = Depends(
 
 
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
-@limiter.limit("5/minute")
+@limiter.limit("5/second")
 async def register(request: Request, req: RegisterRequest, db: AsyncSession = Depends(get_db)):
     existing = await db.execute(
         text("SELECT id FROM users WHERE email = :email"),

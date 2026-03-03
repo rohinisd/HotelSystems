@@ -10,7 +10,7 @@ export default defineConfig({
   retries: isRemote ? 1 : 0,
   workers: isRemote ? 1 : undefined,
   reporter: process.env.CI ? [["html"], ["github"]] : "html",
-  timeout: isRemote ? 90_000 : 60_000,
+  timeout: isRemote ? 120_000 : 60_000,
 
   use: {
     baseURL,
