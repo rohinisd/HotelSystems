@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import { api, type BookingItem } from "@/lib/api";
 import { getRole } from "@/lib/auth";
 import { formatINR } from "@/lib/utils";
@@ -20,10 +21,14 @@ import { toast } from "sonner";
 const PAGE_SIZE = 20;
 
 export default function BookingsPage() {
+  const searchParams = useSearchParams();
+  const dateFromUrl = searchParams.get("date");
   const [bookings, setBookings] = useState<BookingItem[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(0);
-  const [dateFilter, setDateFilter] = useState(new Date().toISOString().split("T")[0]);
+  const [dateFilter, setDateFilter] = useState(
+    dateFromUrl && /^\d{4}-\d{2}-\d{2}$/.test(dateFromUrl) ? dateFromUrl : new Date().toISOString().split("T")[0],
+  );
   const [loading, setLoading] = useState(true);
   const [payingId, setPayingId] = useState<number | null>(null);
   const [openDropdown, setOpenDropdown] = useState<number | null>(null);
@@ -117,6 +122,15 @@ export default function BookingsPage() {
     }
   }
 
+  const sourceLabels: Record<string, string> = {
+    walkin: "Walk-in",
+    phone: "Phone",
+    hudle: "Hudle",
+    playo: "Playo",
+    khelomore: "KheloMore",
+    other: "Other",
+  };
+
   const statusColors: Record<string, string> = {
     confirmed: "bg-emerald-100 text-emerald-700",
     cancelled: "bg-red-100 text-red-700",
@@ -159,6 +173,11 @@ export default function BookingsPage() {
                       </p>
                       <p className="text-xs text-slate-500">
                         {b.branch_name} &middot; {b.start_time} - {b.end_time} &middot; {b.booking_type}
+                        {b.booking_source && b.booking_source !== "turfstack" && (
+                          <span className="ml-1.5 inline-flex items-center rounded-full bg-slate-100 text-slate-600 px-1.5 py-0.5 text-[10px] font-medium">
+                            {sourceLabels[b.booking_source] || b.booking_source}
+                          </span>
+                        )}
                       </p>
                     </div>
                   </div>

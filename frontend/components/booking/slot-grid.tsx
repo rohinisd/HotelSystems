@@ -9,6 +9,7 @@ interface Slot {
   is_available: boolean;
   court_id: number;
   price: number;
+  is_peak?: boolean;
 }
 
 interface SlotGridProps {
@@ -64,8 +65,13 @@ export function SlotGrid({ slots, selectedSlot, onSelect, loading }: SlotGridPro
             )}
           >
             <div className="font-medium">{formatTime12(slot.start_time)}</div>
-            <div className="text-xs text-muted-foreground mt-1">
+            <div className="text-xs text-muted-foreground mt-1 flex items-center justify-center gap-1 flex-wrap">
               {formatINR(slot.price)}
+              {slot.is_peak && (
+                <span className="text-[10px] bg-amber-100 text-amber-700 px-1 py-0.5 rounded font-medium">
+                  Peak
+                </span>
+              )}
             </div>
           </button>
         );

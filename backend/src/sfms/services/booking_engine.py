@@ -29,6 +29,7 @@ class BookingEngine:
             duration_minutes=court["slot_duration_minutes"],
             hourly_rate=float(court["hourly_rate"]),
             pricing_rules=[dict(r) for r in rules],
+            peak_hour_rate=float(court["peak_hour_rate"]) if court.get("peak_hour_rate") else None,
         )
 
         booked = await self.db.execute(
@@ -62,6 +63,7 @@ class BookingEngine:
         player_name: str | None = None,
         player_phone: str | None = None,
         notes: str | None = None,
+        booking_source: str = "turfstack",
     ) -> dict:
         async with self.db.begin_nested():
             conflict = await self.db.execute(
@@ -91,10 +93,10 @@ class BookingEngine:
                 text(
                     """INSERT INTO booking
                        (facility_id, court_id, player_id, date, start_time, end_time,
-                        status, booking_type, amount, player_name, player_phone, notes, created_by)
+                        status, booking_type, amount, player_name, player_phone, notes, created_by, booking_source)
                        VALUES (:facility_id, :court_id, :player_id, :date, :start_time,
                                :end_time, 'confirmed', :booking_type, :amount,
-                               :player_name, :player_phone, :notes, :created_by)
+                               :player_name, :player_phone, :notes, :created_by, :booking_source)
                        RETURNING id, status, amount, created_at"""
                 ),
                 {
@@ -110,6 +112,7 @@ class BookingEngine:
                     "player_phone": player_phone,
                     "notes": notes,
                     "created_by": player_id,
+                    "booking_source": booking_source,
                 },
             )
             booking = result.mappings().first()
@@ -305,6 +308,7 @@ class BookingEngine:
             duration_minutes=duration,
             hourly_rate=rate,
             pricing_rules=[dict(r) for r in rules],
+            peak_hour_rate=float(court["peak_hour_rate"]) if court.get("peak_hour_rate") else None,
         )
         if slots:
             return slots[0]["price"]

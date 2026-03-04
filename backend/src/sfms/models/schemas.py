@@ -154,6 +154,7 @@ class BookingCreateRequest(BaseModel):
     player_name: str | None = None
     player_phone: str | None = None
     notes: str | None = Field(None, max_length=500)
+    booking_source: str = Field("turfstack", max_length=50)
 
 
 class BookingResponse(BaseModel):
@@ -175,6 +176,7 @@ class BookingResponse(BaseModel):
     payment_id: int | None = None
     payment_status: str | None = None
     payment_method: str | None = None
+    booking_source: str | None = None
 
 
 # --- Slots ---
@@ -185,6 +187,7 @@ class SlotResponse(BaseModel):
     is_available: bool
     court_id: int
     price: float
+    is_peak: bool = False
 
 
 # --- Dashboard ---
@@ -263,3 +266,114 @@ class EquipmentResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     branch_name: str | None = None
+
+
+# --- Tournament ---
+
+class TournamentCreate(BaseModel):
+    name: str = Field(..., min_length=2, max_length=200)
+    sport: str = Field(..., min_length=2, max_length=50)
+    format: str = Field("single_elimination", pattern=r"^(single_elimination|double_elimination|round_robin|group_knockout)$")
+    start_date: date
+    end_date: date | None = None
+    registration_deadline: date | None = None
+    max_teams: int | None = Field(None, ge=2, le=256)
+    entry_fee: float = Field(0, ge=0)
+    prize_pool: str | None = None
+    rules: str | None = None
+    description: str | None = None
+    contact_phone: str | None = Field(None, max_length=20)
+    is_public: bool = True
+
+
+class TournamentUpdate(BaseModel):
+    name: str | None = Field(None, min_length=2, max_length=200)
+    sport: str | None = None
+    format: str | None = None
+    status: str | None = Field(None, pattern=r"^(draft|registration_open|registration_closed|in_progress|completed|cancelled)$")
+    start_date: date | None = None
+    end_date: date | None = None
+    registration_deadline: date | None = None
+    max_teams: int | None = Field(None, ge=2, le=256)
+    entry_fee: float | None = Field(None, ge=0)
+    prize_pool: str | None = None
+    rules: str | None = None
+    description: str | None = None
+    contact_phone: str | None = None
+    is_public: bool | None = None
+
+
+class TournamentResponse(BaseModel):
+    id: int
+    facility_id: int
+    name: str
+    sport: str
+    format: str
+    status: str
+    start_date: date
+    end_date: date | None
+    registration_deadline: date | None
+    max_teams: int | None
+    entry_fee: float
+    prize_pool: str | None
+    rules: str | None
+    description: str | None
+    contact_phone: str | None
+    is_public: bool
+    created_at: datetime
+    updated_at: datetime
+    team_count: int = 0
+
+
+class TeamRegister(BaseModel):
+    team_name: str = Field(..., min_length=1, max_length=100)
+    player1_name: str = Field(..., min_length=1, max_length=100)
+    player1_phone: str | None = Field(None, max_length=20)
+    player1_email: str | None = None
+    player2_name: str | None = Field(None, max_length=100)
+    player2_phone: str | None = Field(None, max_length=20)
+
+
+class TeamResponse(BaseModel):
+    id: int
+    tournament_id: int
+    team_name: str
+    player1_name: str
+    player1_phone: str | None
+    player1_email: str | None
+    player2_name: str | None
+    player2_phone: str | None
+    seed: int | None
+    group_name: str | None
+    status: str
+    registered_at: datetime
+
+
+class MatchUpdate(BaseModel):
+    court_id: int | None = None
+    scheduled_time: datetime | None = None
+    score_team1: str | None = None
+    score_team2: str | None = None
+    winner_id: int | None = None
+    status: str | None = Field(None, pattern=r"^(scheduled|in_progress|completed|bye|walkover)$")
+    notes: str | None = None
+
+
+class MatchResponse(BaseModel):
+    id: int
+    tournament_id: int
+    round: int
+    match_number: int
+    group_name: str | None
+    court_id: int | None
+    scheduled_time: datetime | None
+    team1_id: int | None
+    team2_id: int | None
+    team1_name: str | None = None
+    team2_name: str | None = None
+    score_team1: str | None
+    score_team2: str | None
+    winner_id: int | None
+    winner_name: str | None = None
+    status: str
+    notes: str | None

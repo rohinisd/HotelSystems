@@ -123,6 +123,7 @@ export interface Slot {
   is_available: boolean;
   court_id: number;
   price: number;
+  is_peak?: boolean;
 }
 
 export interface BookingItem {
@@ -144,6 +145,7 @@ export interface BookingItem {
   payment_id: number | null;
   payment_status: string | null;
   payment_method: string | null;
+  booking_source?: string;
 }
 
 export interface ScheduleItem extends BookingItem {
@@ -186,6 +188,21 @@ export interface HourlyUtilization {
   booking_count: number;
 }
 
+export interface DueItem {
+  id: number;
+  date: string;
+  start_time: string;
+  end_time: string;
+  amount: number;
+  player_name: string | null;
+  player_phone: string | null;
+  booking_type: string;
+  court_name: string;
+  sport: string;
+  payment_status: string | null;
+  payment_method: string | null;
+}
+
 export interface PricingRule {
   id: number;
   court_id: number;
@@ -214,6 +231,63 @@ export interface Equipment {
   created_at: string;
   updated_at: string;
   branch_name: string | null;
+}
+
+export interface Tournament {
+  id: number;
+  facility_id: number;
+  name: string;
+  sport: string;
+  format: string;
+  status: string;
+  start_date: string;
+  end_date: string | null;
+  registration_deadline: string | null;
+  max_teams: number | null;
+  entry_fee: number;
+  prize_pool: string | null;
+  rules: string | null;
+  description: string | null;
+  contact_phone: string | null;
+  is_public: boolean;
+  created_at: string;
+  updated_at: string;
+  team_count: number;
+}
+
+export interface TournamentTeam {
+  id: number;
+  tournament_id: number;
+  team_name: string;
+  player1_name: string;
+  player1_phone: string | null;
+  player1_email: string | null;
+  player2_name: string | null;
+  player2_phone: string | null;
+  seed: number | null;
+  group_name: string | null;
+  status: string;
+  registered_at: string;
+}
+
+export interface TournamentMatch {
+  id: number;
+  tournament_id: number;
+  round: number;
+  match_number: number;
+  group_name: string | null;
+  court_id: number | null;
+  scheduled_time: string | null;
+  team1_id: number | null;
+  team2_id: number | null;
+  team1_name: string | null;
+  team2_name: string | null;
+  score_team1: string | null;
+  score_team2: string | null;
+  winner_id: number | null;
+  winner_name: string | null;
+  status: string;
+  notes: string | null;
 }
 
 // --- API Client ---
@@ -278,6 +352,7 @@ export const api = {
     player_name?: string;
     player_phone?: string;
     notes?: string;
+    booking_source?: string;
   }) =>
     request<{ id: number; status: string; amount: number }>(
       "/api/v1/bookings",
@@ -298,6 +373,23 @@ export const api = {
   cancelBooking: (id: number) =>
     request<{ id: number; status: string }>(`/api/v1/bookings/${id}/cancel`, {
       method: "PATCH",
+    }),
+
+  blockSlot: (data: {
+    court_id: number;
+    date: string;
+    start_time: string;
+    end_time: string;
+    notes?: string;
+  }) =>
+    request<{ id: number; status: string; amount: number }>("/api/v1/bookings/block", {
+      method: "POST",
+      body: JSON.stringify({ ...data, booking_type: "blocked" }),
+    }),
+
+  unblockSlot: (bookingId: number) =>
+    request<{ id: number; status: string }>(`/api/v1/bookings/block/${bookingId}`, {
+      method: "DELETE",
     }),
 
   getSchedule: (date?: string) =>
@@ -409,6 +501,14 @@ export const api = {
   getUtilization: () =>
     request<UtilizationData[]>("/api/v1/dashboard/utilization"),
 
+  getDues: () =>
+    request<{ items: DueItem[]; total_due: number; count: number }>("/api/v1/dashboard/dues"),
+
+  getCollections: (days?: number) =>
+    request<{ items: { method: string; count: number; total: number }[]; grand_total: number; days: number }>(
+      `/api/v1/dashboard/collections${days ? `?days=${days}` : ""}`,
+    ),
+
   getHourlyUtilization: (days?: number) =>
     request<HourlyUtilization[]>(
       `/api/v1/dashboard/utilization/hourly${days ? `?days=${days}` : ""}`,
@@ -461,4 +561,111 @@ export const api = {
 
   deleteEquipment: (id: number) =>
     request<void>(`/api/v1/equipment/${id}`, { method: "DELETE" }),
+
+  // Tournaments
+  getTournaments: () =>
+    request<Tournament[]>("/api/v1/tournaments"),
+
+  createTournament: (data: {
+    name: string;
+    sport: string;
+    format?: string;
+    start_date: string;
+    end_date?: string;
+    registration_deadline?: string;
+    max_teams?: number;
+    entry_fee?: number;
+    prize_pool?: string;
+    rules?: string;
+    description?: string;
+    contact_phone?: string;
+    is_public?: boolean;
+  }) =>
+    request<Tournament>("/api/v1/tournaments", { method: "POST", body: JSON.stringify(data) }),
+
+  getTournament: (id: number) =>
+    request<Tournament>(`/api/v1/tournaments/${id}`),
+
+  updateTournament: (id: number, data: Partial<{
+    name: string;
+    sport: string;
+    format: string;
+    status: string;
+    start_date: string;
+    end_date: string;
+    registration_deadline: string;
+    max_teams: number;
+    entry_fee: number;
+    prize_pool: string;
+    rules: string;
+    description: string;
+    contact_phone: string;
+    is_public: boolean;
+  }>) =>
+    request<Tournament>(`/api/v1/tournaments/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+
+  deleteTournament: (id: number) =>
+    request<void>(`/api/v1/tournaments/${id}`, { method: "DELETE" }),
+
+  getTournamentTeams: (tournamentId: number) =>
+    request<TournamentTeam[]>(`/api/v1/tournaments/${tournamentId}/teams`),
+
+  registerTeam: (tournamentId: number, data: {
+    team_name: string;
+    player1_name: string;
+    player1_phone?: string;
+    player1_email?: string;
+    player2_name?: string;
+    player2_phone?: string;
+  }) =>
+    request<TournamentTeam>(`/api/v1/tournaments/${tournamentId}/teams`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  withdrawTeam: (tournamentId: number, teamId: number) =>
+    request<void>(`/api/v1/tournaments/${tournamentId}/teams/${teamId}`, { method: "DELETE" }),
+
+  getTournamentMatches: (tournamentId: number) =>
+    request<TournamentMatch[]>(`/api/v1/tournaments/${tournamentId}/matches`),
+
+  generateBracket: (tournamentId: number) =>
+    request<{ matches: TournamentMatch[]; status: string }>(`/api/v1/tournaments/${tournamentId}/bracket`, {
+      method: "POST",
+    }),
+
+  updateMatch: (tournamentId: number, matchId: number, data: {
+    score_team1?: string;
+    score_team2?: string;
+    winner_id?: number;
+    status?: string;
+    notes?: string;
+  }) =>
+    request<TournamentMatch>(`/api/v1/tournaments/${tournamentId}/matches/${matchId}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
+
+  // Public tournament endpoints
+  getPublicTournament: (id: number) =>
+    request<Tournament>(`/api/v1/tournaments/public/${id}`),
+
+  getPublicTournamentTeams: (id: number) =>
+    request<TournamentTeam[]>(`/api/v1/tournaments/public/${id}/teams`),
+
+  getPublicTournamentMatches: (id: number) =>
+    request<TournamentMatch[]>(`/api/v1/tournaments/public/${id}/matches`),
+
+  publicRegisterTeam: (tournamentId: number, data: {
+    team_name: string;
+    player1_name: string;
+    player1_phone?: string;
+    player1_email?: string;
+    player2_name?: string;
+    player2_phone?: string;
+  }) =>
+    request<TournamentTeam>(`/api/v1/tournaments/public/${tournamentId}/register`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
 };

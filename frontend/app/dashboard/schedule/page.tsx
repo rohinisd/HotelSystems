@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { api, type ScheduleItem, type Court } from "@/lib/api";
 import { formatINR } from "@/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Lock } from "lucide-react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 function timeToMinutes(t: string): number {
   const [h, m] = t.split(":").map(Number);
@@ -19,6 +20,15 @@ function formatHour(hour: number): string {
   return `${h12} ${ampm}`;
 }
 
+const SOURCE_LABELS: Record<string, string> = {
+  walkin: "Walk-in",
+  phone: "Phone",
+  hudle: "Hudle",
+  playo: "Playo",
+  khelomore: "KheloMore",
+  other: "Other",
+};
+
 const HOUR_START = 6;
 const HOUR_END = 23;
 const HOURS = Array.from({ length: HOUR_END - HOUR_START }, (_, i) => HOUR_START + i);
@@ -29,7 +39,7 @@ export default function SchedulePage() {
   const [courts, setCourts] = useState<Court[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const refresh = useCallback(() => {
     setLoading(true);
     Promise.all([
       api.getSchedule(date).catch(() => []),
@@ -41,6 +51,40 @@ export default function SchedulePage() {
       })
       .finally(() => setLoading(false));
   }, [date]);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  async function handleBlock() {
+    if (!blockDialog) return;
+    const { court, hour } = blockDialog;
+    const startTime = `${hour.toString().padStart(2, "0")}:00`;
+    const endTime = `${(hour + 1).toString().padStart(2, "0")}:00`;
+    try {
+      await api.blockSlot({
+        court_id: court.id,
+        date,
+        start_time: startTime,
+        end_time: endTime,
+      });
+      setBlockDialog(null);
+      refresh();
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async function handleUnblock() {
+    if (!unblockDialog) return;
+    try {
+      await api.unblockSlot(unblockDialog.bookingId);
+      setUnblockDialog(null);
+      refresh();
+    } catch (e) {
+      console.error(e);
+    }
+  }
 
   function shiftDate(delta: number) {
     const d = new Date(date);
@@ -148,16 +192,37 @@ export default function SchedulePage() {
                     {HOURS.map((h) => {
                       const booking = getBookingAt(court.name, h);
                       if (booking) {
-                        const typeColor = booking.booking_type === "walkin"
-                          ? "bg-amber-100 border-amber-300 text-amber-800"
-                          : "bg-emerald-100 border-emerald-300 text-emerald-800";
+                        const typeColor =
+                          booking.booking_type === "blocked"
+                            ? "bg-rose-100 border-rose-300 text-rose-800"
+                            : booking.booking_type === "walkin"
+                              ? "bg-amber-100 border-amber-300 text-amber-800"
+                              : "bg-emerald-100 border-emerald-300 text-emerald-800";
+                        const isBlocked = booking.booking_type === "blocked";
                         return (
                           <td key={h} className="px-0.5 py-1 border-b">
-                            <div className={`rounded px-1.5 py-1 text-[10px] leading-tight border ${typeColor}`}>
-                              <div className="font-semibold truncate">
-                                {booking.player_full_name || booking.player_name || "Booked"}
+                            <div
+                              className={`rounded px-1.5 py-1 text-[10px] leading-tight border flex items-center gap-1 ${typeColor} ${canBlock && isBlocked ? "cursor-pointer hover:bg-rose-200" : ""}`}
+                              onClick={() =>
+                                canBlock && isBlocked && setUnblockDialog({ bookingId: booking.id, courtName: court.name, hour: h })
+                              }
+                            >
+                              {isBlocked && <Lock className="h-3 w-3 shrink-0" />}
+                              <div className="min-w-0 flex-1">
+                                <div className="font-semibold truncate">
+                                  {isBlocked ? "Blocked" : booking.player_full_name || booking.player_name || "Booked"}
+                                </div>
+                                {!isBlocked && (
+                                  <div className="opacity-70 flex items-center gap-1 flex-wrap">
+                                    {formatINR(booking.amount)}
+                                    {booking.booking_source && booking.booking_source !== "turfstack" && (
+                                      <span className="text-[9px] opacity-80" title={SOURCE_LABELS[booking.booking_source] || booking.booking_source}>
+                                        ({SOURCE_LABELS[booking.booking_source] || booking.booking_source})
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
                               </div>
-                              <div className="opacity-70">{formatINR(booking.amount)}</div>
                             </div>
                           </td>
                         );
@@ -165,7 +230,10 @@ export default function SchedulePage() {
                       const isPast = isToday && h < currentHour;
                       return (
                         <td key={h} className={`px-0.5 py-1 border-b ${isPast ? "bg-slate-50" : ""}`}>
-                          <div className="h-10 rounded border border-dashed border-slate-200" />
+                          <div
+                            className={`h-10 rounded border border-dashed border-slate-200 ${canBlock && !isPast ? "cursor-pointer hover:border-rose-300 hover:bg-rose-50" : ""}`}
+                            onClick={() => canBlock && !isPast && setBlockDialog({ court, hour: h })}
+                          />
                         </td>
                       );
                     })}
@@ -187,10 +255,42 @@ export default function SchedulePage() {
           Walk-in
         </div>
         <div className="flex items-center gap-1.5">
+          <div className="h-3 w-3 rounded bg-rose-100 border border-rose-300" />
+          Blocked
+        </div>
+        <div className="flex items-center gap-1.5">
           <div className="h-3 w-3 rounded border border-dashed border-slate-200" />
           Available
         </div>
       </div>
+
+      <ConfirmDialog
+        open={!!blockDialog}
+        title="Block slot"
+        message={
+          blockDialog
+            ? `Block ${blockDialog.court.name} at ${formatHour(blockDialog.hour)}?`
+            : ""
+        }
+        confirmLabel="Block"
+        variant="warning"
+        onConfirm={handleBlock}
+        onCancel={() => setBlockDialog(null)}
+      />
+
+      <ConfirmDialog
+        open={!!unblockDialog}
+        title="Unblock slot"
+        message={
+          unblockDialog
+            ? `Unblock ${unblockDialog.courtName} at ${formatHour(unblockDialog.hour)}?`
+            : ""
+        }
+        confirmLabel="Unblock"
+        variant="default"
+        onConfirm={handleUnblock}
+        onCancel={() => setUnblockDialog(null)}
+      />
     </div>
   );
 }

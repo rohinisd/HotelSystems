@@ -15,6 +15,7 @@ import {
   Ticket,
   GitBranch,
   Users,
+  AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { clearAuth, getRole } from "@/lib/auth";
@@ -76,9 +77,21 @@ const navItems: NavItem[] = [
     roles: ["owner", "manager", "staff"],
   },
   {
+    label: "Tournaments",
+    href: "/dashboard/tournaments",
+    icon: Trophy,
+    roles: ["owner", "manager"],
+  },
+  {
     label: "Revenue",
     href: "/dashboard/revenue",
     icon: BarChart3,
+    roles: ["owner", "manager", "accountant"],
+  },
+  {
+    label: "Dues",
+    href: "/dashboard/dues",
+    icon: AlertTriangle,
     roles: ["owner", "manager", "accountant"],
   },
   {

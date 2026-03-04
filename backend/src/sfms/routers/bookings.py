@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from sfms.dependencies import get_current_user, get_db, get_tenant_id, require_roles
@@ -61,10 +62,68 @@ async def create_booking(
             player_name=req.player_name,
             player_phone=req.player_phone,
             notes=req.notes,
+            booking_source=req.booking_source,
         )
         return booking
     except SlotUnavailableError as e:
         raise HTTPException(status.HTTP_409_CONFLICT, str(e))
+
+
+@router.post("/block", status_code=status.HTTP_201_CREATED)
+async def block_slot(
+    req: BookingCreateRequest,
+    db: AsyncSession = Depends(get_db),
+    user: dict = Depends(require_roles("owner", "manager")),
+    tenant_id: int | None = Depends(get_tenant_id),
+):
+    """Block a slot so it can't be booked."""
+    if not tenant_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Tenant context required")
+    engine = BookingEngine(db)
+    try:
+        booking = await engine.create(
+            tenant_id=tenant_id,
+            court_id=req.court_id,
+            booking_date=req.date,
+            start_time=req.start_time,
+            end_time=req.end_time,
+            player_id=int(user["sub"]),
+            booking_type="blocked",
+            player_name="BLOCKED",
+            notes=req.notes or "Blocked by management",
+        )
+        return booking
+    except SlotUnavailableError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+
+
+@router.delete("/block/{booking_id}")
+async def unblock_slot(
+    booking_id: int,
+    db: AsyncSession = Depends(get_db),
+    user: dict = Depends(require_roles("owner", "manager")),
+    tenant_id: int | None = Depends(get_tenant_id),
+):
+    """Unblock a previously blocked slot."""
+    if not tenant_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Tenant context required")
+
+    result = await db.execute(
+        text("SELECT id, booking_type FROM booking WHERE id = :id AND facility_id = :fid"),
+        {"id": booking_id, "fid": tenant_id},
+    )
+    row = result.mappings().first()
+    if not row:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Booking not found")
+    if row["booking_type"] != "blocked":
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Only blocked slots can be unblocked")
+
+    await db.execute(
+        text("UPDATE booking SET status = 'cancelled' WHERE id = :id"),
+        {"id": booking_id},
+    )
+    await db.commit()
+    return {"id": booking_id, "status": "unblocked"}
 
 
 @router.get("")

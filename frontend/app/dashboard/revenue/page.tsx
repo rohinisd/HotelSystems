@@ -106,6 +106,8 @@ export default function RevenuePage() {
   const [trend, setTrend] = useState<RevenueTrend[]>([]);
   const [utilization, setUtilization] = useState<UtilizationData[]>([]);
   const [hourly, setHourly] = useState<HourlyUtilization[]>([]);
+  const [collections, setCollections] = useState<{ method: string; count: number; total: number }[]>([]);
+  const [collectionsTotal, setCollectionsTotal] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -113,11 +115,14 @@ export default function RevenuePage() {
       api.getRevenueTrend(30),
       api.getUtilization(),
       api.getHourlyUtilization(30).catch(() => []),
+      api.getCollections(30).catch(() => ({ items: [], grand_total: 0, days: 30 })),
     ])
-      .then(([t, u, h]) => {
+      .then(([t, u, h, c]) => {
         setTrend(t);
         setUtilization(u);
         setHourly(h);
+        setCollections(c.items);
+        setCollectionsTotal(c.grand_total);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -222,6 +227,47 @@ export default function RevenuePage() {
                     </tr>
                   ))}
                 </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Collections by Payment Method (30 days)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="text-center py-8 text-slate-500">Loading...</div>
+          ) : collections.length === 0 ? (
+            <div className="text-center py-8 text-slate-500">No collection data yet</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-left text-slate-500">
+                    <th className="pb-3 font-medium">Method</th>
+                    <th className="pb-3 font-medium text-right">Count</th>
+                    <th className="pb-3 font-medium text-right">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {collections.map((c) => (
+                    <tr key={c.method} className="border-b last:border-0 hover:bg-slate-50">
+                      <td className="py-3 capitalize">{c.method}</td>
+                      <td className="py-3 text-right">{c.count}</td>
+                      <td className="py-3 text-right font-medium">{formatINR(c.total)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="border-t font-medium">
+                    <td className="pt-3">Total</td>
+                    <td className="pt-3 text-right">{collections.reduce((s, c) => s + c.count, 0)}</td>
+                    <td className="pt-3 text-right">{formatINR(collectionsTotal)}</td>
+                  </tr>
+                </tfoot>
               </table>
             </div>
           )}

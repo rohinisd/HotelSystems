@@ -56,6 +56,74 @@ async def get_revenue_trend(
     ]
 
 
+@router.get("/dues")
+async def get_dues(
+    db: AsyncSession = Depends(get_db),
+    user: dict = Depends(require_roles("owner", "manager", "accountant")),
+    tenant_id: int | None = Depends(get_tenant_id),
+):
+    if not tenant_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Tenant context required")
+
+    result = await db.execute(
+        text(
+            """SELECT b.id, b.date, b.start_time, b.end_time, b.amount,
+                      b.player_name, b.player_phone, b.booking_type,
+                      c.name as court_name, c.sport,
+                      p.status as payment_status, p.method as payment_method
+               FROM booking b
+               JOIN court c ON b.court_id = c.id
+               LEFT JOIN payment p ON b.id = p.booking_id
+               WHERE b.facility_id = :fid
+                 AND b.status = 'confirmed'
+                 AND (p.id IS NULL OR p.status = 'pending')
+               ORDER BY b.date DESC, b.start_time"""
+        ),
+        {"fid": tenant_id},
+    )
+    rows = result.mappings().all()
+    total_due = sum(float(r["amount"]) for r in rows)
+    return {
+        "items": [dict(r) for r in rows],
+        "total_due": total_due,
+        "count": len(rows),
+    }
+
+
+@router.get("/collections")
+async def get_collections(
+    days: int = Query(30, ge=7, le=365),
+    db: AsyncSession = Depends(get_db),
+    user: dict = Depends(require_roles("owner", "manager", "accountant")),
+    tenant_id: int | None = Depends(get_tenant_id),
+):
+    if not tenant_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Tenant context required")
+
+    result = await db.execute(
+        text(
+            """SELECT p.method,
+                      COUNT(*) as count,
+                      COALESCE(SUM(p.amount), 0) as total
+               FROM payment p
+               JOIN booking b ON p.booking_id = b.id
+               WHERE b.facility_id = :fid
+                 AND p.status = 'captured'
+                 AND p.paid_at >= CURRENT_DATE - :days
+               GROUP BY p.method
+               ORDER BY total DESC"""
+        ),
+        {"fid": tenant_id, "days": days},
+    )
+    rows = result.fetchall()
+    items = [
+        {"method": str(r.method), "count": r.count, "total": float(r.total)}
+        for r in rows
+    ]
+    grand_total = sum(item["total"] for item in items)
+    return {"items": items, "grand_total": grand_total, "days": days}
+
+
 @router.get("/utilization")
 async def get_utilization(
     db: AsyncSession = Depends(get_db),
@@ -141,7 +209,7 @@ async def export_revenue_csv(
 
     query = """SELECT b.id, b.date, b.start_time, b.end_time, c.name as court,
                       c.sport, b.player_name, b.amount, b.status, b.booking_type,
-                      p.method as payment_method, p.status as payment_status
+                      b.booking_source, p.method as payment_method, p.status as payment_status
                FROM booking b
                JOIN court c ON b.court_id = c.id
                LEFT JOIN payment p ON b.id = p.booking_id
@@ -161,9 +229,9 @@ async def export_revenue_csv(
 
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(["ID", "Date", "Start", "End", "Court", "Sport", "Player", "Amount", "Status", "Type", "Payment Method", "Payment Status"])
+    writer.writerow(["ID", "Date", "Start", "End", "Court", "Sport", "Player", "Amount", "Status", "Type", "Booking Source", "Payment Method", "Payment Status"])
     for r in rows:
-        writer.writerow([r.id, r.date, r.start_time, r.end_time, r.court, r.sport, r.player_name, r.amount, r.status, r.booking_type, r.payment_method, r.payment_status])
+        writer.writerow([r.id, r.date, r.start_time, r.end_time, r.court, r.sport, r.player_name, r.amount, r.status, r.booking_type, getattr(r, "booking_source", "") or "", r.payment_method, r.payment_status])
 
     output.seek(0)
     return StreamingResponse(

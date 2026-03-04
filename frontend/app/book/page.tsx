@@ -18,6 +18,7 @@ interface Slot {
   is_available: boolean;
   court_id: number;
   price: number;
+  is_peak?: boolean;
 }
 
 export default function BookPage() {
@@ -40,7 +41,18 @@ export default function BookPage() {
   const [error, setError] = useState("");
   const [playerName, setPlayerName] = useState("");
   const [playerPhone, setPlayerPhone] = useState("");
+  const [bookingSource, setBookingSource] = useState("turfstack");
   const [initialLoading, setInitialLoading] = useState(true);
+
+  const BOOKING_SOURCE_OPTIONS = [
+    { value: "turfstack", label: "TurfStack" },
+    { value: "walkin", label: "Walk-in" },
+    { value: "phone", label: "Phone Call" },
+    { value: "hudle", label: "Hudle" },
+    { value: "playo", label: "Playo" },
+    { value: "khelomore", label: "KheloMore" },
+    { value: "other", label: "Other" },
+  ];
 
   useEffect(() => {
     const facilityId = getFacilityId();
@@ -100,6 +112,7 @@ export default function BookPage() {
         booking_type: bookingType,
         player_name: playerName || undefined,
         player_phone: playerPhone || undefined,
+        booking_source: isStaff ? bookingSource : "turfstack",
       });
       const qs = new URLSearchParams({
         id: String(result.id),
@@ -236,6 +249,18 @@ export default function BookPage() {
             <CardContent className="space-y-3">
               <Input placeholder="Player name" value={playerName} onChange={(e) => setPlayerName(e.target.value)} />
               <Input placeholder="Phone number" value={playerPhone} onChange={(e) => setPlayerPhone(e.target.value)} />
+              <div>
+                <label className="text-sm font-medium text-slate-700 mb-1.5 block">Booking Source</label>
+                <select
+                  value={bookingSource}
+                  onChange={(e) => setBookingSource(e.target.value)}
+                  className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+                >
+                  {BOOKING_SOURCE_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
             </CardContent>
           </Card>
         )}
@@ -247,7 +272,14 @@ export default function BookPage() {
                 <div>
                   <p className="font-semibold text-slate-900">{selectedCourt?.name} - {sport}</p>
                   <p className="text-sm text-slate-600">{selectedDate} | {selectedSlot.start_time} - {selectedSlot.end_time}</p>
-                  <p className="text-lg font-bold text-emerald-600 mt-1">{formatINR(selectedSlot.price)}</p>
+                  <p className="text-lg font-bold text-emerald-600 mt-1 flex items-center gap-2">
+                    {formatINR(selectedSlot.price)}
+                    {selectedSlot.is_peak && (
+                      <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-medium">
+                        Peak
+                      </span>
+                    )}
+                  </p>
                 </div>
                 <Button onClick={handleBook} disabled={booking} size="lg">
                   {booking ? "Booking..." : "Confirm Booking"}

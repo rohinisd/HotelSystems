@@ -13,7 +13,7 @@ from slowapi.errors import RateLimitExceeded
 from sfms.config import get_settings
 from sfms.middleware.tenant import TenantMiddleware
 from sfms.rate_limit import limiter
-from sfms.routers import auth, bookings, courts, dashboard, equipment, facilities, health, payments, users
+from sfms.routers import auth, bookings, courts, dashboard, equipment, facilities, health, payments, tournaments, users
 from sfms.utils.logger import setup_logging
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger(__name__)
@@ -69,6 +69,7 @@ def create_app() -> FastAPI:
     app.include_router(dashboard.router, prefix="/api/v1")
     app.include_router(users.router, prefix="/api/v1")
     app.include_router(equipment.router, prefix="/api/v1")
+    app.include_router(tournaments.router, prefix="/api/v1")
 
     @app.on_event("startup")
     async def on_startup():
