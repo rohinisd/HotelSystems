@@ -38,6 +38,11 @@ export default function SchedulePage() {
   const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
   const [courts, setCourts] = useState<Court[]>([]);
   const [loading, setLoading] = useState(true);
+  const [blockDialog, setBlockDialog] = useState<{ court: Court; hour: number } | null>(null);
+  const [unblockDialog, setUnblockDialog] = useState<{ bookingId: number; courtName: string; hour: number } | null>(null);
+
+  const role = typeof window !== "undefined" ? localStorage.getItem("sfms_role") : null;
+  const canBlock = role === "owner" || role === "manager";
 
   const refresh = useCallback(() => {
     setLoading(true);
