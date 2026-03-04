@@ -52,4 +52,16 @@ test.describe("Schedule View", () => {
     await expect(page.getByRole("heading", { name: "Schedule" })).toBeVisible({ timeout: 10_000 });
     await expect(page).toHaveURL(/\/dashboard\/schedule/);
   });
+
+  test("schedule legend shows all booking types", async ({ page }) => {
+    await loginAs(page, "owner");
+    await page.goto("/dashboard/schedule");
+
+    await expect(page.getByRole("heading", { name: "Schedule" })).toBeVisible({ timeout: 15_000 });
+
+    await expect(page.getByText("Online Booking")).toBeVisible();
+    await expect(page.getByText("Walk-in")).toBeVisible();
+    await expect(page.getByText("Blocked")).toBeVisible();
+    await expect(page.getByText("Available")).toBeVisible();
+  });
 });

@@ -18,7 +18,7 @@ test.describe("Settings Page", () => {
     await expect(nameInput).toBeVisible({ timeout: 10_000 });
 
     const emailInput = labelledInput(page, "Email");
-    await expect(emailInput).toHaveValue(CREDENTIALS.owner.email);
+    await expect(emailInput).toHaveValue(CREDENTIALS.owner.email, { timeout: 10_000 });
   });
 
   test("edit name and save shows toast", async ({ page }) => {

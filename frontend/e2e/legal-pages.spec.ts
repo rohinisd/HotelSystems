@@ -21,9 +21,9 @@ test.describe("Legal & Policy Pages", () => {
   test("refund policy page loads with cancellation tiers", async ({ page }) => {
     await page.goto("/refund-policy");
     await expect(page.getByRole("heading", { name: "Cancellation & Refund Policy" })).toBeVisible({ timeout: 10_000 });
-    await expect(page.getByText("Full refund")).toBeVisible();
-    await expect(page.getByText("50% refund")).toBeVisible();
-    await expect(page.getByText("No refund")).toBeVisible();
+    await expect(page.getByRole("cell", { name: "Full refund" })).toBeVisible();
+    await expect(page.getByRole("cell", { name: "50% refund" })).toBeVisible();
+    await expect(page.getByRole("cell", { name: "No refund" })).toBeVisible();
     await expect(page.getByText("No-Show Policy")).toBeVisible();
   });
 
@@ -31,7 +31,7 @@ test.describe("Legal & Policy Pages", () => {
     await page.goto("/contact");
     await expect(page.getByRole("heading", { name: "Contact Us" })).toBeVisible({ timeout: 10_000 });
     await expect(page.getByText("gen.girish@gmail.com")).toBeVisible();
-    await expect(page.getByText("Hyderabad")).toBeVisible();
+    await expect(page.getByText("Hyderabad, Telangana, India")).toBeVisible();
     await expect(page.getByText("Girish Basavaraj Hiremath")).toBeVisible();
     await expect(page.getByText("Razorpay Software Pvt. Ltd.")).toBeVisible();
   });

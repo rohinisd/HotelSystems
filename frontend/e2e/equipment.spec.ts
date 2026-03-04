@@ -32,7 +32,8 @@ test.describe("Equipment Management as Owner", () => {
     await page.getByRole("button", { name: "Add Equipment" }).click();
 
     const formCard = page.locator(".border-emerald-200");
-    await formCard.getByPlaceholder("e.g. Wilson Pro Staff").fill("E2E Test Racket");
+    const itemName = `E2E Racket ${Date.now().toString().slice(-6)}`;
+    await formCard.getByPlaceholder("e.g. Wilson Pro Staff").fill(itemName);
     await formCard.getByPlaceholder("e.g. Wilson, Yonex").fill("TestBrand");
 
     const quantityInputs = formCard.locator("input[type='number']");
@@ -41,7 +42,7 @@ test.describe("Equipment Management as Owner", () => {
 
     await formCard.getByRole("button", { name: "Add Equipment" }).click();
 
-    const newItem = page.getByText("E2E Test Racket");
+    const newItem = page.getByText(itemName).first();
     const errorMsg = page.locator(".text-red-600");
     await expect(newItem.or(errorMsg)).toBeVisible({ timeout: 15_000 });
   });
