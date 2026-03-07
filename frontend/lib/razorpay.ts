@@ -42,7 +42,7 @@ export function openRazorpayCheckout(
     amount: order.amount,
     currency: order.currency,
     order_id: order.order_id,
-    name: "TurfStack",
+    name: "BookYourSlots",
     description: `Court Booking #${order.booking_id}`,
     handler: (response: RazorpayResponse) => {
       onSuccess(response);

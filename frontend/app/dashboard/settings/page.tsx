@@ -255,7 +255,7 @@ export default function SettingsPage() {
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center justify-between text-sm text-slate-500">
-            <span>TurfStack v0.1.0</span>
+            <span>BookYourSlots v0.1.0</span>
             <span>API: {(process.env.NEXT_PUBLIC_API_URL || "").replace(/^https?:\/\//, "") || "localhost"}</span>
           </div>
         </CardContent>

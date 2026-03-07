@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   description:
     "Book pickleball, cricket, badminton, and volleyball courts instantly. Real-time availability and online payments.",
   openGraph: {
-    title: "Book a Court | TurfStack",
+    title: "Book a Court | BookYourSlots",
     description:
       "Book sports courts with real-time availability. Pickleball, cricket, badminton & more.",
   },

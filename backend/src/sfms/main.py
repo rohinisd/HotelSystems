@@ -73,7 +73,12 @@ def create_app() -> FastAPI:
 
     @app.on_event("startup")
     async def on_startup():
-        logger.info("SFMS API starting", env=settings.app_env, debug=settings.debug)
+        logger.info(
+            "SFMS API starting",
+            env=settings.app_env,
+            debug=settings.debug,
+            cors_origins=settings.cors_origin_list,
+        )
 
     return app
 

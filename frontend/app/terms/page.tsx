@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LegalLayout } from "@/components/layout/legal-layout";
+import { PAYMENT_PROVIDER } from "@/lib/app-config";
 
 export const metadata: Metadata = {
   title: "Terms & Conditions",
@@ -32,7 +33,7 @@ export default function TermsPage() {
           <h2 className="text-xl font-semibold text-white">3. Booking &amp; Payments</h2>
           <ul className="list-disc pl-6 space-y-2">
             <li>All court bookings are subject to availability at the time of confirmation.</li>
-            <li>Payments are processed securely through Razorpay. We accept credit/debit cards, UPI, net banking, and wallets.</li>
+            <li>Payments are processed securely through {PAYMENT_PROVIDER.name}. We accept credit/debit cards, UPI, net banking, and wallets.</li>
             <li>Prices displayed include applicable taxes unless stated otherwise.</li>
             <li>A booking is confirmed only after successful payment or explicit confirmation by facility staff for walk-in bookings.</li>
           </ul>

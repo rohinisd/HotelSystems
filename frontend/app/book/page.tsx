@@ -102,18 +102,32 @@ export default function BookPage() {
 
     setBooking(true);
     setError("");
+    const payload = {
+      court_id: selectedCourt.id,
+      date: selectedDate,
+      start_time: selectedSlot.start_time,
+      end_time: selectedSlot.end_time,
+      booking_type: isStaff ? "walkin" : "online",
+      player_name: playerName || undefined,
+      player_phone: playerPhone || undefined,
+      booking_source: isStaff ? bookingSource : "turfstack",
+    };
+
+    const tryCreate = () => api.createBooking(payload);
+
     try {
-      const bookingType = isStaff ? "walkin" : "online";
-      const result = await api.createBooking({
-        court_id: selectedCourt.id,
-        date: selectedDate,
-        start_time: selectedSlot.start_time,
-        end_time: selectedSlot.end_time,
-        booking_type: bookingType,
-        player_name: playerName || undefined,
-        player_phone: playerPhone || undefined,
-        booking_source: isStaff ? bookingSource : "turfstack",
-      });
+      let result;
+      try {
+        result = await tryCreate();
+      } catch (firstErr) {
+        const msg = firstErr instanceof Error ? firstErr.message : "";
+        if (msg === "Failed to fetch" || msg.toLowerCase().includes("network")) {
+          await new Promise((r) => setTimeout(r, 3000));
+          result = await tryCreate();
+        } else {
+          throw firstErr;
+        }
+      }
       const qs = new URLSearchParams({
         id: String(result.id),
         amount: String(result.amount),
@@ -123,7 +137,15 @@ export default function BookPage() {
       });
       router.push(`/book/confirmation?${qs.toString()}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Booking failed");
+      const msg = err instanceof Error ? err.message : "Booking failed";
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001";
+      if (msg === "Failed to fetch" || msg.toLowerCase().includes("network")) {
+        setError(
+          `Could not reach the API (${apiBase}). Open F12 → Network, try again, and check the failed request. Also check Render logs for errors.`,
+        );
+      } else {
+        setError(msg);
+      }
     } finally {
       setBooking(false);
     }

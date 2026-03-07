@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LegalLayout } from "@/components/layout/legal-layout";
+import { PAYMENT_PROVIDER } from "@/lib/app-config";
 
 export const metadata: Metadata = {
   title: "Cancellation & Refund Policy",
@@ -52,7 +53,7 @@ export default function RefundPolicyPage() {
         <section className="space-y-3">
           <h2 className="text-xl font-semibold text-white">3. How Refunds Work</h2>
           <ul className="list-disc pl-6 space-y-2">
-            <li><strong className="text-white">Online payments (Razorpay):</strong> Refunds are processed back to the original payment method (card, UPI, net banking, or wallet). Razorpay typically processes refunds within 5–7 business days.</li>
+            <li><strong className="text-white">Online payments ({PAYMENT_PROVIDER.name}):</strong> Refunds are processed back to the original payment method (card, UPI, net banking, or wallet). {PAYMENT_PROVIDER.name} typically processes refunds within 5–7 business days.</li>
             <li><strong className="text-white">Cash payments:</strong> Cash refunds are handled directly at the facility. TurfStack does not process cash refunds online.</li>
           </ul>
         </section>

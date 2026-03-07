@@ -86,7 +86,7 @@ export default function LoginPage() {
           <div className="h-9 w-9 rounded-lg bg-emerald-500 flex items-center justify-center font-bold text-xs tracking-tight">
             TS
           </div>
-          <span className="text-xl font-bold tracking-tight">TurfStack</span>
+          <span className="text-xl font-bold tracking-tight">BookYourSlots</span>
         </div>
 
         <div className="space-y-6 max-w-md">
@@ -112,7 +112,7 @@ export default function LoginPage() {
         </div>
 
         <p className="text-xs text-slate-600">
-          &copy; {new Date().getFullYear()} TurfStack &middot; Built in Hyderabad
+          &copy; {new Date().getFullYear()} BookYourSlots &middot; Built in Hyderabad
         </p>
       </div>
 
@@ -125,7 +125,7 @@ export default function LoginPage() {
               TS
             </div>
             <span className="text-lg font-bold tracking-tight text-slate-900">
-              TurfStack
+              BookYourSlots
             </span>
           </div>
 

@@ -3,9 +3,9 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Sign In",
   description:
-    "Sign in to your TurfStack dashboard. Manage court bookings, revenue, and team.",
+    "Sign in to your BookYourSlots dashboard. Manage court bookings, revenue, and team.",
   openGraph: {
-    title: "Sign In | TurfStack",
+    title: "Sign In | BookYourSlots",
     description: "Access your sports facility dashboard.",
   },
 };

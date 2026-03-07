@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Zap, CalendarCheck, BarChart3, Shield } from "lucide-react";
+import { APP_NAME } from "@/lib/app-config";
 
 const features = [
   {
@@ -32,7 +33,7 @@ export default function Home() {
           <div className="h-8 w-8 rounded-lg bg-emerald-500 flex items-center justify-center font-bold text-xs tracking-tight">
             TS
           </div>
-          <span className="text-lg font-bold tracking-tight">TurfStack</span>
+          <span className="text-lg font-bold tracking-tight">{APP_NAME}</span>
         </div>
         <div className="flex items-center gap-3">
           <Link
@@ -64,7 +65,7 @@ export default function Home() {
           </h1>
 
           <p className="text-lg text-slate-400 max-w-xl mx-auto">
-            TurfStack is the all-in-one platform for sports facility owners.
+            {APP_NAME} is the all-in-one platform for sports facility owners.
             Online bookings, walk-in management, payments, and revenue analytics
             &mdash; out of the box.
           </p>
@@ -108,7 +109,7 @@ export default function Home() {
           <Link href="/refund-policy" className="hover:text-slate-300 transition-colors">Refund Policy</Link>
           <Link href="/contact" className="hover:text-slate-300 transition-colors">Contact</Link>
         </div>
-        &copy; {new Date().getFullYear()} TurfStack &middot; Built in Hyderabad
+        &copy; {new Date().getFullYear()} {APP_NAME} &middot; Built in Hyderabad
       </footer>
     </div>
   );

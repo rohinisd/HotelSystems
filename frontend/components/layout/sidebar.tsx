@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { clearAuth, getRole } from "@/lib/auth";
+import { APP_NAME } from "@/lib/app-config";
 
 interface NavItem {
   label: string;
@@ -134,7 +135,7 @@ export function Sidebar({ className }: { className?: string }) {
         <div className="h-8 w-8 rounded-lg bg-emerald-500 flex items-center justify-center font-bold text-xs tracking-tight">
           TS
         </div>
-        <span className="text-lg font-bold tracking-tight">TurfStack</span>
+        <span className="text-lg font-bold tracking-tight">{APP_NAME}</span>
       </div>
 
       <div className="px-4 pt-4 pb-2">

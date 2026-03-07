@@ -75,7 +75,8 @@ CREATE TABLE IF NOT EXISTS booking (
     created_by INTEGER REFERENCES users(id),
     cancelled_by INTEGER REFERENCES users(id),
     cancelled_at TIMESTAMPTZ,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    booking_source VARCHAR(50) NOT NULL DEFAULT 'turfstack'
 );
 
 CREATE TABLE IF NOT EXISTS payment (

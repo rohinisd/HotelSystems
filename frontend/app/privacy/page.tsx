@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LegalLayout } from "@/components/layout/legal-layout";
+import { PAYMENT_PROVIDER } from "@/lib/app-config";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
@@ -18,7 +19,7 @@ export default function PrivacyPage() {
           <ul className="list-disc pl-6 space-y-2">
             <li><strong className="text-white">Account information:</strong> Name, email address, phone number provided during registration.</li>
             <li><strong className="text-white">Booking data:</strong> Court selections, dates, times, and booking history.</li>
-            <li><strong className="text-white">Payment information:</strong> Payments are processed by Razorpay. We do not store your card details, bank account numbers, or UPI PINs. We only store transaction references (order IDs, payment IDs) for record-keeping.</li>
+            <li><strong className="text-white">Payment information:</strong> Payments are processed by {PAYMENT_PROVIDER.name}. We do not store your card details, bank account numbers, or UPI PINs. We only store transaction references (order IDs, payment IDs) for record-keeping.</li>
             <li><strong className="text-white">Usage data:</strong> Browser type, IP address, and pages visited for analytics and security purposes.</li>
           </ul>
         </section>
@@ -28,7 +29,7 @@ export default function PrivacyPage() {
           <ul className="list-disc pl-6 space-y-2">
             <li>To process and manage your court bookings.</li>
             <li>To send booking confirmations and important updates.</li>
-            <li>To process payments and refunds through Razorpay.</li>
+            <li>To process payments and refunds through {PAYMENT_PROVIDER.name}.</li>
             <li>To provide customer support.</li>
             <li>To improve our platform and user experience.</li>
             <li>To prevent fraud and ensure platform security.</li>
@@ -40,7 +41,7 @@ export default function PrivacyPage() {
           <p>We do not sell your personal data. We share information only with:</p>
           <ul className="list-disc pl-6 space-y-2">
             <li><strong className="text-white">Facility owners:</strong> Your name and phone number are shared with the facility where you book a court, so they can identify you on arrival.</li>
-            <li><strong className="text-white">Razorpay:</strong> Payment details are shared with Razorpay for transaction processing. Razorpay&apos;s privacy policy applies to their handling of your data.</li>
+            <li><strong className="text-white">{PAYMENT_PROVIDER.name}:</strong> Payment details are shared with {PAYMENT_PROVIDER.name} for transaction processing. Their privacy policy applies to their handling of your data.</li>
             <li><strong className="text-white">Legal requirements:</strong> We may disclose data if required by law or to protect our legal rights.</li>
           </ul>
         </section>
@@ -49,7 +50,7 @@ export default function PrivacyPage() {
           <h2 className="text-xl font-semibold text-white">4. Data Security</h2>
           <p>
             We use industry-standard security measures including encrypted connections (HTTPS), secure password hashing (bcrypt), 
-            and JWT-based authentication. Payment data is handled entirely by Razorpay, which is PCI-DSS compliant.
+            and JWT-based authentication. Payment data is handled entirely by {PAYMENT_PROVIDER.name}, which is PCI-DSS compliant.
           </p>
         </section>
 

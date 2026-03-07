@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Mail, MapPin, Globe } from "lucide-react";
 import { LegalLayout } from "@/components/layout/legal-layout";
+import { PAYMENT_PROVIDER } from "@/lib/app-config";
 
 export const metadata: Metadata = {
   title: "Contact Us",
@@ -38,8 +39,8 @@ export default function ContactPage() {
             <Globe className="h-5 w-5 text-emerald-400" />
           </div>
           <h3 className="font-semibold text-white">Website</h3>
-          <a href="https://turfstack.vercel.app" className="text-sm text-emerald-400 hover:underline">
-            turfstack.vercel.app
+          <a href="https://sfms-eight.vercel.app" className="text-sm text-emerald-400 hover:underline">
+            sfms-eight.vercel.app
           </a>
         </div>
       </div>
@@ -53,11 +54,14 @@ export default function ContactPage() {
           </div>
           <div className="flex gap-3">
             <span className="text-slate-500 min-w-[140px]">Platform</span>
-            <span>TurfStack — Sports Facility Booking</span>
+            <span>BookYourSlots — Sports Facility Booking</span>
           </div>
           <div className="flex gap-3">
             <span className="text-slate-500 min-w-[140px]">Payment partner</span>
-            <span>Razorpay Software Pvt. Ltd.</span>
+            <div>
+              <span>{PAYMENT_PROVIDER.name}</span>
+              <p className="text-xs text-slate-500 mt-1">CIN: {PAYMENT_PROVIDER.cin} · GST: {PAYMENT_PROVIDER.gst}</p>
+            </div>
           </div>
           <div className="flex gap-3">
             <span className="text-slate-500 min-w-[140px]">Response time</span>

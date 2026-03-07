@@ -33,7 +33,7 @@ test.describe("Legal & Policy Pages", () => {
     await expect(page.getByText("gen.girish@gmail.com")).toBeVisible();
     await expect(page.getByText("Hyderabad, Telangana, India")).toBeVisible();
     await expect(page.getByText("Girish Basavaraj Hiremath")).toBeVisible();
-    await expect(page.getByText("Razorpay Software Pvt. Ltd.")).toBeVisible();
+    await expect(page.getByText("Razorpay Payments Private Limited")).toBeVisible();
   });
 
   test("footer links navigate between legal pages", async ({ page }) => {
