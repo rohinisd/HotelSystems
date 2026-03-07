@@ -19,8 +19,9 @@ class Settings(BaseSettings):
             url = url.replace("postgres://", "postgresql+asyncpg://", 1)
         elif url.startswith("postgresql://") and "+asyncpg" not in url:
             url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
-        # Strip query string only for local/flycast (SSL not needed); keep for Neon etc.
-        if "sslmode=" in url and ("localhost" in url or ".flycast" in url or ".internal" in url):
+        # asyncpg does not accept sslmode/channel_binding in the URL; strip query string.
+        # SSL for Neon etc. is enabled via connect_args in database.py.
+        if "?" in url:
             url = url.split("?")[0]
         return url
 

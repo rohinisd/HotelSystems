@@ -11,10 +11,11 @@ _session_factory = None
 
 
 def _get_connect_args(db_url: str) -> dict:
-    """Disable SSL for Fly.io internal connections; use verify-full otherwise."""
+    """SSL: off for local/Fly.io internal; on for Neon and other external hosts (asyncpg uses ssl=True)."""
     if ".flycast" in db_url or ".internal" in db_url or "localhost" in db_url:
         return {"ssl": False}
-    return {}
+    # Neon and other cloud Postgres require SSL
+    return {"ssl": _ssl.create_default_context()}
 
 
 def get_engine():
