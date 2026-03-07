@@ -3,7 +3,7 @@ services:
     name: sfms-api
     runtime: docker
     dockerfilePath: backend/Dockerfile
-    dockerContext: backend
+    dockerContext: .
     envVars:
       - key: DATABASE_URL
         sync: false
