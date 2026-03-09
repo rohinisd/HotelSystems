@@ -6,10 +6,11 @@ import Link from "next/link";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -18,14 +19,14 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/v1/auth/login`, {
+      const res = await fetch(`${API_URL}/api/v1/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, full_name: fullName }),
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.detail || "Login failed");
+        setError(data.detail || "Registration failed");
         return;
       }
       if (typeof window !== "undefined") {
@@ -43,8 +44,21 @@ export default function LoginPage() {
   return (
     <main className="min-h-screen flex items-center justify-center p-8">
       <div className="w-full max-w-sm border rounded-lg shadow bg-white p-6">
-        <h1 className="text-xl font-bold mb-4">Login</h1>
+        <h1 className="text-xl font-bold mb-4">Register</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Full name
+            </label>
+            <input
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              required
+              minLength={2}
+              className="w-full border rounded px-3 py-2"
+            />
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Email
@@ -66,6 +80,7 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              minLength={6}
               className="w-full border rounded px-3 py-2"
             />
           </div>
@@ -77,13 +92,13 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
           >
-            {loading ? "Signing in..." : "Sign in"}
+            {loading ? "Creating account..." : "Register"}
           </button>
         </form>
         <p className="mt-4 text-sm text-gray-600">
-          No account?{" "}
-          <Link href="/register" className="text-blue-600 hover:underline">
-            Register
+          Already have an account?{" "}
+          <Link href="/login" className="text-blue-600 hover:underline">
+            Login
           </Link>
         </p>
         <p className="mt-2">

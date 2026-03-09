@@ -70,6 +70,7 @@ HotelSystems/
 
 | Need | Document / section |
 |------|--------------------|
+| Architecture diagram, components, ports, file structure | ARCHITECTURE.md |
 | Deploy to cloud (Neon, Render, Vercel) | DEPLOYMENT_SETUP.md |
 | Run on your own server, Nginx, backups | ON_SERVER_STACK.md |
 | Connect Cursor to server | ON_SERVER_STACK.md §14 (sync), “Connect to server in Cursor” |

@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 
-from sfms.config import get_settings
+from hotel_ms.config import get_settings
 
 config = context.config
 
@@ -19,7 +19,7 @@ if config.config_file_name is not None:
 target_metadata = None
 
 settings = get_settings()
-config.set_main_option("sqlalchemy.url", settings.database_url)
+config.set_main_option("sqlalchemy.url", settings.async_database_url)
 
 
 def run_migrations_offline() -> None:
@@ -30,7 +30,6 @@ def run_migrations_offline() -> None:
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
     )
-
     with context.begin_transaction():
         context.run_migrations()
 
@@ -42,16 +41,10 @@ def do_run_migrations(connection):
 
 
 async def run_async_migrations():
-    db_url = settings.async_database_url
-    connect_args = {}
-    if ".flycast" in db_url or ".internal" in db_url or "localhost" in db_url:
-        connect_args["ssl"] = False
-
-    connectable = async_engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
+    from sqlalchemy.ext.asyncio import create_async_engine
+    connectable = create_async_engine(
+        settings.async_database_url,
         poolclass=pool.NullPool,
-        connect_args=connect_args,
     )
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)
