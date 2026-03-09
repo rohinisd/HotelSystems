@@ -1,6 +1,6 @@
 # Build context: backend/ (docker compose: context: ../backend)
 # Paths are relative to backend/ — do NOT use backend/ prefix.
-FROM python:3.12-slim AS base
+FROM python:3.14-slim AS base
 WORKDIR /app
 
 RUN apt-get update && \
