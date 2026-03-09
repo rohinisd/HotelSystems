@@ -2,9 +2,9 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-sfms}
+      POSTGRES_DB: ${POSTGRES_DB:-hotel_db}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sfms_dev_password}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hotel_dev_password}
     ports:
       - "5433:5432"
     volumes:
@@ -24,10 +24,9 @@ services:
     ports:
       - "8001:8001"
     environment:
-      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-sfms_dev_password}@postgres:5432/${POSTGRES_DB:-sfms}
+      PYTHONPATH: /app/src
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-hotel_dev_password}@postgres:5432/${POSTGRES_DB:-hotel_db}
       JWT_SECRET: ${JWT_SECRET:-dev_secret_change_in_production_please}
-      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-rzp_test_dummy}
-      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-dummy_secret}
       CORS_ORIGINS: '["http://localhost:3000","http://localhost:3001"]'
       APP_ENV: dev
       DEBUG: "true"
@@ -45,7 +44,7 @@ services:
       context: ../frontend
       target: runner
     ports:
-      - "3001:3000"
+      - "3000:3000"
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:8001
     depends_on:
