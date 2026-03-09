@@ -15,5 +15,8 @@ RUN pip install --no-cache-dir .
 
 FROM base AS production
 ENV PYTHONPATH=/app/src
+# Verify package exists in image (fail build if server has wrong backend structure)
+RUN test -d /app/src/hotel_ms && ls -la /app/src/hotel_ms/
 EXPOSE 8001
-CMD ["uvicorn", "hotel_ms.main:app", "--host", "0.0.0.0", "--port", "8001", "--workers", "2"]
+# Shell form so PYTHONPATH is set when uvicorn starts; 1 worker avoids subprocess env issues
+CMD ["sh", "-c", "exec uvicorn hotel_ms.main:app --host 0.0.0.0 --port 8001 --workers 1"]
