@@ -14,5 +14,6 @@ COPY alembic/ alembic/
 RUN pip install --no-cache-dir .
 
 FROM base AS production
+ENV PYTHONPATH=/app/src
 EXPOSE 8001
 CMD ["uvicorn", "hotel_ms.main:app", "--host", "0.0.0.0", "--port", "8001", "--workers", "2"]
