@@ -1,4 +1,5 @@
-# Build context: repository root (Render). Paths are backend/...
+# Build context: backend/ (docker compose: context: ../backend)
+# Paths are relative to backend/ — do NOT use backend/ prefix.
 FROM python:3.12-slim AS base
 WORKDIR /app
 
@@ -6,12 +7,12 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends curl && \
     rm -rf /var/lib/apt/lists/*
 
-COPY backend/pyproject.toml .
-COPY backend/src/ src/
-COPY backend/alembic.ini .
-COPY backend/alembic/ alembic/
+COPY pyproject.toml .
+COPY src/ src/
+COPY alembic.ini .
+COPY alembic/ alembic/
 RUN pip install --no-cache-dir .
 
 FROM base AS production
 EXPOSE 8001
-CMD ["uvicorn", "sfms.main:app", "--host", "0.0.0.0", "--port", "8001", "--workers", "2"]
+CMD ["uvicorn", "hotel_ms.main:app", "--host", "0.0.0.0", "--port", "8001", "--workers", "2"]
