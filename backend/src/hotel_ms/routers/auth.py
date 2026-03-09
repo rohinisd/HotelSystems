@@ -9,22 +9,27 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from hotel_ms.config import get_settings
-from hotel_ms.dependencies import get_db
+from hotel_ms.dependencies import get_current_user, get_db
 from hotel_ms.models.schemas import LoginRequest, RegisterRequest, TokenResponse
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
+
+@router.get("/me")
+async def me(user: dict = Depends(get_current_user)):
+    return {"email": user.get("email"), "role": user.get("role"), "restaurant_id": user.get("restaurant_id")}
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-def _create_token(user_id: int, email: str, role: str, hotel_id: int | None) -> str:
+def _create_token(user_id: int, email: str, role: str, restaurant_id: int | None) -> str:
     settings = get_settings()
     expire = datetime.now(timezone.utc) + timedelta(minutes=settings.jwt_expire_minutes)
     payload = {
         "sub": str(user_id),
         "email": email,
         "role": role,
-        "hotel_id": hotel_id,
+        "restaurant_id": restaurant_id,
         "exp": expire,
     }
     return jwt.encode(payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
@@ -34,7 +39,7 @@ def _create_token(user_id: int, email: str, role: str, hotel_id: int | None) -> 
 async def login(req: LoginRequest, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         text(
-            "SELECT id, email, hashed_password, role, hotel_id, is_active FROM users WHERE email = :email"
+            "SELECT id, email, hashed_password, role, restaurant_id, is_active FROM users WHERE email = :email"
         ),
         {"email": req.email},
     )
@@ -47,13 +52,13 @@ async def login(req: LoginRequest, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Account is disabled")
 
     settings = get_settings()
-    token = _create_token(user["id"], user["email"], user["role"], user["hotel_id"])
+    token = _create_token(user["id"], user["email"], user["role"], user["restaurant_id"])
 
     return TokenResponse(
         access_token=token,
         expires_in=settings.jwt_expire_minutes * 60,
         role=user["role"],
-        hotel_id=user["hotel_id"],
+        restaurant_id=user["restaurant_id"],
     )
 
 
@@ -71,7 +76,7 @@ async def register(req: RegisterRequest, db: AsyncSession = Depends(get_db)):
         text(
             """INSERT INTO users (email, hashed_password, full_name, phone, role)
                VALUES (:email, :password, :name, :phone, 'guest')
-               RETURNING id, email, role, hotel_id"""
+               RETURNING id, email, role, restaurant_id"""
         ),
         {"email": req.email, "password": hashed, "name": req.full_name, "phone": req.phone},
     )
@@ -81,11 +86,11 @@ async def register(req: RegisterRequest, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Registration failed")
 
     settings = get_settings()
-    token = _create_token(row["id"], row["email"], row["role"], row["hotel_id"])
+    token = _create_token(row["id"], row["email"], row["role"], row["restaurant_id"])
 
     return TokenResponse(
         access_token=token,
         expires_in=settings.jwt_expire_minutes * 60,
         role=row["role"],
-        hotel_id=row["hotel_id"],
+        restaurant_id=row["restaurant_id"],
     )

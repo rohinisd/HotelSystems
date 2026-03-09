@@ -1,6 +1,6 @@
-# Hotel Systems – Project reference (start to end)
+# TableBook (HotelSystems) – Project reference (start to end)
 
-This file is the **single reference** for the Hotel Management System project: decisions, steps, structure, and pointers to other docs. Use it for onboarding, Cursor skills, and deployment.
+This file is the **single reference** for the **Restaurant Table Booking SaaS** project: decisions, steps, structure, and pointers to other docs. Use it for onboarding, Cursor skills, and deployment.
 
 ---
 
@@ -8,12 +8,13 @@ This file is the **single reference** for the Hotel Management System project: d
 
 | Item | Value |
 |------|--------|
-| **Name** | Hotel Management System (HotelSystems) |
+| **Name** | TableBook – Restaurant table booking SaaS (repo: HotelSystems) |
 | **Stack** | See [DEPLOYMENT_SETUP.md](DEPLOYMENT_SETUP.md) and [ON_SERVER_STACK.md](ON_SERVER_STACK.md) |
 | **Backend** | FastAPI (Python 3.12), Uvicorn, SQLAlchemy async, PostgreSQL 16 |
-| **Frontend** | Next.js 15, Node 20, React 19, Tailwind, shadcn/ui |
-| **Database** | PostgreSQL 16, `btree_gist`; schema in `db/init.sql`, seed in `db/seed.sql` |
+| **Frontend** | Next.js 15, Node 20, React 19, Tailwind |
+| **Database** | PostgreSQL 16; schema in `db/init.sql` (restaurant, restaurant_table, users, reservation), seed in `db/seed.sql` |
 | **Run** | Docker Compose (postgres + backend + frontend) or on-server with Nginx + cron backups |
+| **SaaS** | Multi-tenant: one row per restaurant; customers can customize their page (theme, logo, colors) via **Dashboard → Customize** |
 
 ---
 
@@ -28,6 +29,7 @@ This file is the **single reference** for the Hotel Management System project: d
 | 5 | Git on server | Documented GitHub connection from server (SSH key or HTTPS PAT) in ON_SERVER_STACK.md §15. |
 | 6 | App scaffold | Created basic hotel application: backend (FastAPI, hotel_ms), frontend (Next.js 15), db (init.sql, seed.sql), docker (docker-compose.yml), REFERENCE.md, SKILLS.md. Backend: health, auth (login/register), hotels (list hotels + rooms). Frontend: home, login, register, dashboard (hotels + rooms). Seed: one hotel, five rooms; first user created via Register. |
 | 7 | Dockerfile fix | Backend Dockerfile: paths relative to backend/ (no `backend/` prefix) so `docker compose` build with `context: ../backend` works. Added COPY alembic.ini and alembic/. |
+| 8 | Restaurant SaaS | Converted from hotel/room to **restaurant table booking SaaS**. DB: restaurant (with theme columns), restaurant_table, reservation; backend: restaurants, tables, reservations, PATCH customize; frontend: home (list restaurants), restaurant page (by slug), book a table, dashboard (reservations + link to Customize), **Customize page** (name, tagline, logo, primary/secondary colour, address, etc.). Seed: one restaurant, five tables, one owner user. |
 
 *(Update this table as you add features, deploy, or change stack.)*
 
@@ -55,8 +57,8 @@ HotelSystems/
 │   ├── next.config.ts
 │   └── Dockerfile
 ├── db/
-│   ├── init.sql          ← Schema (hotel, room, users, reservation)
-│   └── seed.sql          ← Seed data
+│   ├── init.sql          ← Schema (restaurant, restaurant_table, users, reservation)
+│   └── seed.sql          ← Seed data (one restaurant, tables, owner user)
 ├── docker/
 │   └── docker-compose.yml
 └── scripts/
@@ -94,7 +96,7 @@ docker compose up -d --build
 - Backend API: http://localhost:8001
 - API docs: http://localhost:8001/api/docs
 
-Database is seeded from `db/init.sql` and `db/seed.sql` on first start.
+Database is seeded from `db/init.sql` and `db/seed.sql` on first start. **If you had the previous hotel/room schema**, use a fresh database (drop and recreate) or add a migration; the new schema uses `restaurant`, `restaurant_table`, and a different `reservation` shape.
 
 ---
 
@@ -170,12 +172,12 @@ git pull origin main
 
 ## 6. Domain model (current)
 
-- **hotel** – One hotel (name, address, contact).
-- **room** – Room in a hotel (type, rate, capacity).
-- **users** – Staff/guests (email, role: owner, manager, staff, guest).
-- **reservation** – Booking of a room (guest, check-in, check-out, status).
+- **restaurant** – One tenant (name, slug, address, **logo_url, primary_color, secondary_color**, tagline, etc.) for SaaS customization.
+- **restaurant_table** – Table in a restaurant (name, capacity, min_party, max_party).
+- **users** – Staff/guests (restaurant_id for owners/staff, email, role).
+- **reservation** – Table booking (restaurant_id, table_id, date, time, party_size, guest details, status).
 
-Schema and indexes are in `db/init.sql`.
+Schema and indexes are in `db/init.sql`. Restaurant owners can **customize** their public page via Dashboard → Customize (theme, logo, colours).
 
 ---
 

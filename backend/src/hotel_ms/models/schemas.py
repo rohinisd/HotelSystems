@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import date, time
 from pydantic import BaseModel, EmailStr, Field
 
 
@@ -22,27 +23,75 @@ class TokenResponse(BaseModel):
     token_type: str = "bearer"
     expires_in: int
     role: str
-    hotel_id: int | None = None
+    restaurant_id: int | None = None
 
 
-# --- Hotel ---
+# --- Restaurant ---
 
-class HotelResponse(BaseModel):
+class RestaurantResponse(BaseModel):
     id: int
     name: str
+    slug: str
     address: str | None
     city: str | None
     phone: str | None
+    email: str | None
+    logo_url: str | None
+    primary_color: str | None
+    secondary_color: str | None
+    cover_image_url: str | None
+    tagline: str | None
     is_active: bool
 
 
-# --- Room ---
+class RestaurantCustomizeUpdate(BaseModel):
+    name: str | None = Field(None, min_length=1, max_length=255)
+    tagline: str | None = Field(None, max_length=255)
+    logo_url: str | None = Field(None, max_length=500)
+    primary_color: str | None = Field(None, max_length=20)
+    secondary_color: str | None = Field(None, max_length=20)
+    cover_image_url: str | None = Field(None, max_length=500)
+    address: str | None = None
+    city: str | None = None
+    phone: str | None = None
+    email: str | None = None
 
-class RoomResponse(BaseModel):
+
+# --- Table ---
+
+class RestaurantTableResponse(BaseModel):
     id: int
-    hotel_id: int
+    restaurant_id: int
     name: str
-    room_type: str
-    rate_per_night: float
     capacity: int
-    is_available: bool
+    min_party: int
+    max_party: int
+    is_active: bool
+
+
+# --- Reservation ---
+
+class ReservationCreate(BaseModel):
+    table_id: int
+    reservation_date: date
+    reservation_time: time
+    party_size: int = Field(..., ge=1, le=20)
+    guest_name: str = Field(..., min_length=2, max_length=255)
+    guest_email: EmailStr
+    guest_phone: str | None = Field(None, max_length=20)
+    notes: str | None = None
+
+
+class ReservationResponse(BaseModel):
+    id: int
+    restaurant_id: int
+    table_id: int
+    reservation_date: date
+    reservation_time: time
+    party_size: int
+    status: str
+    guest_name: str
+    guest_email: str
+    guest_phone: str | None
+    notes: str | None
+    created_at: str | None = None

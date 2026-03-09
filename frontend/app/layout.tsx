@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Hotel Management System",
-  description: "Hotel booking and management",
+  title: "TableBook – Restaurant table booking",
+  description: "Book a table at your favourite restaurant. SaaS for restaurants.",
 };
 
 export default function RootLayout({

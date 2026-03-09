@@ -1,35 +1,47 @@
--- Hotel Management System - Database Schema
+-- Restaurant Table Booking SaaS - Database Schema
+-- Multi-tenant: each restaurant is a tenant
 
 CREATE EXTENSION IF NOT EXISTS btree_gist;
 
-CREATE TABLE IF NOT EXISTS hotel (
+-- Tenant: one row per restaurant
+CREATE TABLE IF NOT EXISTS restaurant (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
+    slug VARCHAR(100) UNIQUE NOT NULL,
     address TEXT,
     city VARCHAR(100),
     state VARCHAR(100),
     pincode VARCHAR(10),
     phone VARCHAR(20),
+    email VARCHAR(255),
+    -- Customization (SaaS: customer can customize their page)
+    logo_url VARCHAR(500),
+    primary_color VARCHAR(20) DEFAULT '#0f766e',
+    secondary_color VARCHAR(20) DEFAULT '#134e4a',
+    cover_image_url VARCHAR(500),
+    tagline VARCHAR(255),
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TABLE IF NOT EXISTS room (
+-- Tables in a restaurant (capacity = seats)
+CREATE TABLE IF NOT EXISTS restaurant_table (
     id SERIAL PRIMARY KEY,
-    hotel_id INTEGER NOT NULL REFERENCES hotel(id) ON DELETE CASCADE,
+    restaurant_id INTEGER NOT NULL REFERENCES restaurant(id) ON DELETE CASCADE,
     name VARCHAR(100) NOT NULL,
-    room_type VARCHAR(50) NOT NULL,
-    rate_per_night NUMERIC(10, 2) NOT NULL,
-    capacity INTEGER DEFAULT 2,
-    is_available BOOLEAN DEFAULT TRUE,
+    capacity INTEGER NOT NULL DEFAULT 2,
+    min_party INTEGER DEFAULT 1,
+    max_party INTEGER DEFAULT 6,
+    is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Staff / owners (restaurant_id = which restaurant they belong to)
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
-    hotel_id INTEGER REFERENCES hotel(id),
+    restaurant_id INTEGER REFERENCES restaurant(id),
     email VARCHAR(255) UNIQUE NOT NULL,
     hashed_password VARCHAR(255) NOT NULL,
     full_name VARCHAR(255) NOT NULL,
@@ -40,27 +52,27 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Table reservation
 CREATE TABLE IF NOT EXISTS reservation (
     id SERIAL PRIMARY KEY,
-    hotel_id INTEGER NOT NULL REFERENCES hotel(id),
-    room_id INTEGER NOT NULL REFERENCES room(id),
+    restaurant_id INTEGER NOT NULL REFERENCES restaurant(id) ON DELETE CASCADE,
+    table_id INTEGER NOT NULL REFERENCES restaurant_table(id) ON DELETE CASCADE,
     guest_id INTEGER REFERENCES users(id),
-    check_in DATE NOT NULL,
-    check_out DATE NOT NULL,
+    reservation_date DATE NOT NULL,
+    reservation_time TIME NOT NULL,
+    party_size INTEGER NOT NULL DEFAULT 2,
     status VARCHAR(20) DEFAULT 'confirmed',
-    guest_name VARCHAR(255),
-    guest_email VARCHAR(255),
+    guest_name VARCHAR(255) NOT NULL,
+    guest_email VARCHAR(255) NOT NULL,
     guest_phone VARCHAR(20),
-    amount NUMERIC(10, 2) NOT NULL DEFAULT 0,
     notes TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
-    CONSTRAINT chk_dates CHECK (check_out > check_in)
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Indexes
-CREATE INDEX IF NOT EXISTS idx_room_hotel ON room(hotel_id);
-CREATE INDEX IF NOT EXISTS idx_users_hotel ON users(hotel_id);
-CREATE INDEX IF NOT EXISTS idx_reservation_hotel ON reservation(hotel_id);
-CREATE INDEX IF NOT EXISTS idx_reservation_room ON reservation(room_id);
-CREATE INDEX IF NOT EXISTS idx_reservation_dates ON reservation(room_id, check_in, check_out);
+CREATE INDEX IF NOT EXISTS idx_restaurant_table_restaurant ON restaurant_table(restaurant_id);
+CREATE INDEX IF NOT EXISTS idx_users_restaurant ON users(restaurant_id);
+CREATE INDEX IF NOT EXISTS idx_reservation_restaurant ON reservation(restaurant_id);
+CREATE INDEX IF NOT EXISTS idx_reservation_table ON reservation(table_id);
+CREATE INDEX IF NOT EXISTS idx_reservation_date ON reservation(restaurant_id, reservation_date, reservation_time);

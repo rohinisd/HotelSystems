@@ -1,4 +1,4 @@
-# Hotel Systems – Architecture
+# TableBook – Architecture (Restaurant Table Booking SaaS)
 
 High-level architecture, components, ports, and file structure.
 
@@ -31,7 +31,7 @@ High-level architecture, components, ports, and file structure.
 |-------------|----------------------|----------------|--------------------|----------------------------|
 | **Frontend**| Next.js 15, Node 20  | 3000           | **3000** (or 3001) | Web UI (React, Tailwind)   |
 | **Backend** | FastAPI, Python 3.12 | 8001           | **8001**           | REST API, auth, business   |
-| **Database**| PostgreSQL 16        | 5432           | **5433**           | Data (hotel, room, users, reservations) |
+| **Database**| PostgreSQL 16        | 5432           | **5433**           | Data (restaurant, restaurant_table, users, reservations) |
 
 - **Frontend** talks to backend via `NEXT_PUBLIC_API_URL` (e.g. `http://localhost:8001` or `http://72.60.101.226:8001`).
 - **Backend** talks to Postgres via `DATABASE_URL` (inside Docker: host `postgres`, port `5432`).
@@ -71,7 +71,7 @@ HotelSystems/
 │   │       ├── config.py   ← Settings (DB, JWT, CORS)
 │   │       ├── dependencies.py
 │   │       ├── models/     ← database.py, schemas.py
-│   │       └── routers/    ← health, auth, hotels
+│   │       └── routers/    ← health, auth, restaurants (list, by-slug, tables, reservations, customize)
 │   ├── alembic/            ← Migrations
 │   ├── alembic.ini
 │   ├── pyproject.toml
@@ -80,16 +80,17 @@ HotelSystems/
 ├── frontend/               ← Web UI (exposed on port 3000)
 │   ├── app/
 │   │   ├── layout.tsx
-│   │   ├── page.tsx        ← Home
+│   │   ├── page.tsx        ← Home (list restaurants)
+│   │   ├── restaurant/[slug]/  ← Restaurant page, book a table
 │   │   ├── login/
 │   │   ├── register/
-│   │   └── dashboard/      ← Hotels + rooms
+│   │   └── dashboard/      ← Reservations, link to Customize; dashboard/customize (theme, logo, colours)
 │   ├── package.json
 │   ├── next.config.ts      ← output: "standalone"
 │   └── Dockerfile
 │
 ├── db/                     ← Schema and seed (used by Postgres on 5432/5433)
-│   ├── init.sql            ← Tables: hotel, room, users, reservation
+│   ├── init.sql            ← Tables: restaurant, restaurant_table, users, reservation
 │   └── seed.sql
 │
 ├── docker/
@@ -105,7 +106,7 @@ HotelSystems/
 ## 5. Request flow
 
 1. **User** → opens browser → **Frontend** (host port **3000** or **3001**).
-2. **Frontend** → calls **Backend** (host port **8001**) for API (e.g. `/api/v1/auth/login`, `/api/v1/hotels`).
+2. **Frontend** → calls **Backend** (host port **8001**) for API (e.g. `/api/v1/auth/login`, `/api/v1/restaurants`, `/api/v1/restaurants/{id}/reservations`, `/api/v1/restaurants/{id}/customize`).
 3. **Backend** → uses **Postgres** (container port **5432**, host **5433**) for data.
 4. **Backend** → returns JSON to frontend; frontend renders UI.
 
@@ -127,14 +128,15 @@ HotelSystems/
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────┐
-│  HOTEL SYSTEMS – ARCHITECTURE OVERVIEW                                   │
+│  TABLEBOOK – RESTAURANT TABLE BOOKING SAAS                                │
 ├──────────────────────────────────────────────────────────────────────────┤
 │  USER  →  Frontend (:3000)  →  Backend (:8001)  →  PostgreSQL (:5433)   │
 │           Next.js 15           FastAPI (hotel_ms)   init.sql + seed.sql  │
-│           React 19             Uvicorn             hotel, room, users,  │
-│           Tailwind             JWT, asyncpg         reservation          │
+│           React 19             Uvicorn             restaurant,           │
+│           Tailwind             JWT, asyncpg         restaurant_table,   │
+│                                restaurants API       users, reservation  │
 ├──────────────────────────────────────────────────────────────────────────┤
 │  PORTS (host): Frontend 3000 | Backend 8001 | Postgres 5433             │
-│  REPO: backend/, frontend/, db/, docker/                                 │
+│  SAAS: Multi-tenant restaurants; Customize page for theme/logo/colours  │
 └──────────────────────────────────────────────────────────────────────────┘
 ```
