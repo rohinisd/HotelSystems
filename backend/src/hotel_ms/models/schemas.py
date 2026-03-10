@@ -26,6 +26,10 @@ class TokenResponse(BaseModel):
     restaurant_id: int | None = None
 
 
+class GoogleAuthRequest(BaseModel):
+    credential: str  # Google ID token from frontend
+
+
 # --- Restaurant ---
 
 class RestaurantResponse(BaseModel):

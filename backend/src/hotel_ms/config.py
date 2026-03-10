@@ -27,6 +27,8 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = 60
 
+    google_client_id: str | None = None  # Required for Google Sign-In (e.g. xxx.apps.googleusercontent.com)
+
     cors_origins: str = '["http://localhost:3000","http://localhost:3001"]'
 
     @property

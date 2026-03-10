@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { GoogleAuthProvider } from "./providers/GoogleAuthProvider";
 
 export const metadata: Metadata = {
   title: "TableBook – Restaurant table booking",
@@ -14,7 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased min-h-screen bg-gray-50">
-        {children}
+        <GoogleAuthProvider>{children}</GoogleAuthProvider>
       </body>
     </html>
   );

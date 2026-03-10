@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import secrets
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
 from jose import jwt
 from passlib.context import CryptContext
 from sqlalchemy import text
@@ -10,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from hotel_ms.config import get_settings
 from hotel_ms.dependencies import get_current_user, get_db
-from hotel_ms.models.schemas import LoginRequest, RegisterRequest, TokenResponse
+from hotel_ms.models.schemas import GoogleAuthRequest, LoginRequest, RegisterRequest, TokenResponse
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -93,4 +96,66 @@ async def register(req: RegisterRequest, db: AsyncSession = Depends(get_db)):
         expires_in=settings.jwt_expire_minutes * 60,
         role=row["role"],
         restaurant_id=row["restaurant_id"],
+    )
+
+
+@router.post("/google", response_model=TokenResponse)
+async def google_auth(body: GoogleAuthRequest, db: AsyncSession = Depends(get_db)):
+    """Verify Google ID token and sign in or create user. Requires GOOGLE_CLIENT_ID to be set."""
+    settings = get_settings()
+    if not settings.google_client_id:
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "Google Sign-In is not configured")
+
+    try:
+        decoded = id_token.verify_oauth2_token(
+            body.credential,
+            google_requests.Request(),
+            settings.google_client_id,
+        )
+    except Exception:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid Google token")
+
+    email = decoded.get("email")
+    name = (decoded.get("name") or decoded.get("given_name") or email or "User").strip()
+    if not email:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Google account has no email")
+
+    result = await db.execute(
+        text(
+            "SELECT id, email, role, restaurant_id, is_active FROM users WHERE email = :email"
+        ),
+        {"email": email},
+    )
+    user = result.mappings().first()
+
+    if user:
+        if not user["is_active"]:
+            raise HTTPException(status.HTTP_403_FORBIDDEN, "Account is disabled")
+        user_id, role, restaurant_id = user["id"], user["role"], user["restaurant_id"]
+    else:
+        # Create new user (no password; Google-only login). Use a random hash so password login is impossible.
+        placeholder_password = secrets.token_urlsafe(32)
+        hashed = pwd_context.hash(placeholder_password)
+        await db.execute(
+            text(
+                """INSERT INTO users (email, hashed_password, full_name, role)
+                   VALUES (:email, :password, :name, 'guest')
+                   RETURNING id, role, restaurant_id"""
+            ),
+            {"email": email, "password": hashed, "name": name},
+        )
+        await db.commit()
+        r = await db.execute(
+            text("SELECT id, role, restaurant_id FROM users WHERE email = :email"),
+            {"email": email},
+        )
+        row = r.mappings().first()
+        user_id, role, restaurant_id = row["id"], row["role"], row["restaurant_id"]
+
+    token = _create_token(user_id, email, role, restaurant_id)
+    return TokenResponse(
+        access_token=token,
+        expires_in=settings.jwt_expire_minutes * 60,
+        role=role,
+        restaurant_id=restaurant_id,
     )

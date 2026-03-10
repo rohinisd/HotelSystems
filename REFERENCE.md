@@ -30,6 +30,7 @@ This file is the **single reference** for the **Restaurant Table Booking SaaS** 
 | 6 | App scaffold | Created basic hotel application: backend (FastAPI, hotel_ms), frontend (Next.js 15), db (init.sql, seed.sql), docker (docker-compose.yml), REFERENCE.md, SKILLS.md. Backend: health, auth (login/register), hotels (list hotels + rooms). Frontend: home, login, register, dashboard (hotels + rooms). Seed: one hotel, five rooms; first user created via Register. |
 | 7 | Dockerfile fix | Backend Dockerfile: paths relative to backend/ (no `backend/` prefix) so `docker compose` build with `context: ../backend` works. Added COPY alembic.ini and alembic/. |
 | 8 | Restaurant SaaS | Converted from hotel/room to **restaurant table booking SaaS**. DB: restaurant (with theme columns), restaurant_table, reservation; backend: restaurants, tables, reservations, PATCH customize; frontend: home (list restaurants), restaurant page (by slug), book a table, dashboard (reservations + link to Customize), **Customize page** (name, tagline, logo, primary/secondary colour, address, etc.). Seed: one restaurant, five tables, one owner user. |
+| 9 | Google Auth | **Sign in with Google** and **register with email/password** (including Gmail). Backend: `google-auth`, `POST /api/v1/auth/google` (verifies ID token, find-or-create user), env `GOOGLE_CLIENT_ID`. Frontend: `@react-oauth/google`, Google Sign-In button on login and register; env `NEXT_PUBLIC_GOOGLE_CLIENT_ID`. See §Google Auth below. |
 
 *(Update this table as you add features, deploy, or change stack.)*
 
@@ -97,6 +98,17 @@ docker compose up -d --build
 - API docs: http://localhost:8001/api/docs
 
 Database is seeded from `db/init.sql` and `db/seed.sql` on first start. **If you had the previous hotel/room schema**, use a fresh database (drop and recreate) or add a migration; the new schema uses `restaurant`, `restaurant_table`, and a different `reservation` shape.
+
+**Fix “Network error” on server:** When the app is at `http://72.60.101.226:3000`, the browser must call the API at the same host. Set `NEXT_PUBLIC_API_URL=http://72.60.101.226:8001` and add `http://72.60.101.226:3000` to backend `CORS_ORIGINS`. Rebuild the frontend so the new API URL is baked in.
+
+---
+
+## 5b. Google Auth (Sign in with Google)
+
+- **Backend:** Set `GOOGLE_CLIENT_ID` to your Google Cloud OAuth 2.0 Client ID (Web application). Same value is used to verify the ID token.
+- **Frontend:** Set `NEXT_PUBLIC_GOOGLE_CLIENT_ID` to the same Client ID (needed for the Google button).
+- **Google Cloud Console:** Create a project → APIs & Services → Credentials → Create OAuth 2.0 Client ID (Web application). Add authorized JavaScript origins: `http://localhost:3000`, `http://72.60.101.226:3000` (and your production domain). No redirect URI needed for the One Tap/button flow we use.
+- If either env var is missing, the Google button is hidden; email/password login and register still work.
 
 ---
 
