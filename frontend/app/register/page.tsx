@@ -49,7 +49,7 @@ export default function RegisterPage() {
 
         <div className="mb-4">
           <GoogleSignIn
-            text="signup"
+            text="signup_with"
             onSuccess={() => { router.push("/dashboard"); router.refresh(); }}
             onError={setError}
           />

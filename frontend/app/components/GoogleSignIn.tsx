@@ -7,7 +7,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001";
 type Props = {
   onSuccess?: () => void;
   onError?: (err: string) => void;
-  text?: "signin" | "signup" | "continue_with";
+  text?: "signin" | "signup_with" | "continue_with" | "signin_with";
 };
 
 export function GoogleSignIn({ onSuccess, onError, text = "continue_with" }: Props) {
