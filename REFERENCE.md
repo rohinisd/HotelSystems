@@ -30,7 +30,8 @@ This file is the **single reference** for the **Restaurant Table Booking SaaS** 
 | 6 | App scaffold | Created basic hotel application: backend (FastAPI, hotel_ms), frontend (Next.js 15), db (init.sql, seed.sql), docker (docker-compose.yml), REFERENCE.md, SKILLS.md. Backend: health, auth (login/register), hotels (list hotels + rooms). Frontend: home, login, register, dashboard (hotels + rooms). Seed: one hotel, five rooms; first user created via Register. |
 | 7 | Dockerfile fix | Backend Dockerfile: paths relative to backend/ (no `backend/` prefix) so `docker compose` build with `context: ../backend` works. Added COPY alembic.ini and alembic/. |
 | 8 | Restaurant SaaS | Converted from hotel/room to **restaurant table booking SaaS**. DB: restaurant (with theme columns), restaurant_table, reservation; backend: restaurants, tables, reservations, PATCH customize; frontend: home (list restaurants), restaurant page (by slug), book a table, dashboard (reservations + link to Customize), **Customize page** (name, tagline, logo, primary/secondary colour, address, etc.). Seed: one restaurant, five tables, one owner user. |
-| 9 | Google Auth | **Sign in with Google** and **register with email/password** (including Gmail). Backend: `google-auth`, `POST /api/v1/auth/google` (verifies ID token, find-or-create user), env `GOOGLE_CLIENT_ID`. Frontend: `@react-oauth/google`, Google Sign-In button on login and register; env `NEXT_PUBLIC_GOOGLE_CLIENT_ID`. See §Google Auth below. |
+| 9 | Google Auth | **Sign in with Google** and **register with email/password** (including Gmail). Backend: `google-auth`, `POST /api/v1/auth/google` (verifies ID token, find-or-create user), env `GOOGLE_CLIENT_ID`. Frontend: `@react-oauth/google`, Google Sign-In button on login and register; env `NEXT_PUBLIC_GOOGLE_CLIENT_ID`. See §5b. |
+| 10 | Google Client ID in env examples | Added Google OAuth Client ID to `docker/.env.server.example` and `.config/.env.example`. **Never commit the Client Secret**; our flow uses only the Client ID. |
 
 *(Update this table as you add features, deploy, or change stack.)*
 
@@ -108,11 +109,40 @@ Database is seeded from `db/init.sql` and `db/seed.sql` on first start. **If you
 - **Backend:** Set `GOOGLE_CLIENT_ID` to your Google Cloud OAuth 2.0 Client ID (Web application). Same value is used to verify the ID token.
 - **Frontend:** Set `NEXT_PUBLIC_GOOGLE_CLIENT_ID` to the same Client ID (needed for the Google button).
 - **Google Cloud Console:** Create a project → APIs & Services → Credentials → Create OAuth 2.0 Client ID (Web application). Add authorized JavaScript origins: `http://localhost:3000`, `http://72.60.101.226:3000` (and your production domain). No redirect URI needed for the One Tap/button flow we use.
+- **Security:** Use only the **Client ID** in env files. **Never commit the Client Secret** (e.g. `GOCSPX-...`); keep it only in local/server `.env` if you need it elsewhere. Our Sign-in with Google flow does not require the secret.
 - If either env var is missing, the Google button is hidden; email/password login and register still work.
 
 ---
 
 ## 5a. Git commands: local → GitHub → server
+
+**Repo:** `https://github.com/rohinisd/HotelSystems`
+
+**Push (local → GitHub):**
+```bash
+cd c:\Users\rohin\OneDrive\Desktop\HotelSystems
+git remote set-url origin https://github.com/rohinisd/HotelSystems.git
+git add -A
+git status
+git commit -m "Your message"
+git push origin main
+```
+
+**Pull (server ← GitHub):**
+```bash
+cd /path/to/HotelSystems
+git pull origin main
+```
+
+**First-time clone on server:**
+```bash
+git clone https://github.com/rohinisd/HotelSystems.git
+cd HotelSystems
+```
+
+---
+
+*(Below: generic instructions if you use a different repo.)*
 
 Replace `YOUR_USERNAME` and `YOUR_REPO` with your GitHub username and repository name (e.g. `HotelSystems` or `hotel-management-system`).
 

@@ -47,6 +47,9 @@ export default function RegisterPage() {
       <div className="w-full max-w-sm border border-stone-200 rounded-xl shadow-sm bg-white p-6">
         <h1 className="text-xl font-bold text-stone-900 mb-4">Register</h1>
 
+        <p className="text-stone-600 text-sm mb-3">
+          Sign in with Google to create your account and access your dashboard.
+        </p>
         <div className="mb-4">
           <GoogleSignIn
             text="signup_with"
@@ -54,10 +57,6 @@ export default function RegisterPage() {
             onError={setError}
           />
         </div>
-
-        <p className="text-center text-stone-500 text-sm mb-4">
-          Or create a password with your Gmail (or any email)
-        </p>
 
         <div className="relative my-4">
           <span className="block text-center text-stone-400 text-sm">or register with email</span>

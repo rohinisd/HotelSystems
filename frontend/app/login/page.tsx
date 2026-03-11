@@ -46,6 +46,9 @@ export default function LoginPage() {
       <div className="w-full max-w-sm border border-stone-200 rounded-xl shadow-sm bg-white p-6">
         <h1 className="text-xl font-bold text-stone-900 mb-4">Login</h1>
 
+        <p className="text-stone-600 text-sm mb-3">
+          Sign in with Google to access your dashboard.
+        </p>
         <div className="mb-4">
           <GoogleSignIn
             text="signin"
