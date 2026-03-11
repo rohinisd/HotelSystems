@@ -32,6 +32,7 @@ This file is the **single reference** for the **Restaurant Table Booking SaaS** 
 | 8 | Restaurant SaaS | Converted from hotel/room to **restaurant table booking SaaS**. DB: restaurant (with theme columns), restaurant_table, reservation; backend: restaurants, tables, reservations, PATCH customize; frontend: home (list restaurants), restaurant page (by slug), book a table, dashboard (reservations + link to Customize), **Customize page** (name, tagline, logo, primary/secondary colour, address, etc.). Seed: one restaurant, five tables, one owner user. |
 | 9 | Google Auth | **Sign in with Google** and **register with email/password** (including Gmail). Backend: `google-auth`, `POST /api/v1/auth/google` (verifies ID token, find-or-create user), env `GOOGLE_CLIENT_ID`. Frontend: `@react-oauth/google`, Google Sign-In button on login and register; env `NEXT_PUBLIC_GOOGLE_CLIENT_ID`. See §5b. |
 | 10 | Google Client ID in env examples | Added Google OAuth Client ID to `docker/.env.server.example` and `.config/.env.example`. **Never commit the Client Secret**; our flow uses only the Client ID. |
+| 11 | Meghana-style UI | Redesigned frontend to resemble Meghana Foods (meghanafoods.in): tango orange (#EA580C) primary, DM Sans font, section-container, white bg, clean navbar (Sign In / Register), hero + restaurant grid on home, same flows (Google OAuth, email login/register, dashboard, customize). All local setup and custom settings unchanged. |
 
 *(Update this table as you add features, deploy, or change stack.)*
 

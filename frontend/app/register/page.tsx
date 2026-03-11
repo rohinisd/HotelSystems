@@ -32,9 +32,11 @@ export default function RegisterPage() {
       }
       if (typeof window !== "undefined") {
         localStorage.setItem("token", data.access_token);
+        window.location.href = "/dashboard";
+      } else {
+        router.push("/dashboard");
+        router.refresh();
       }
-      router.push("/dashboard");
-      router.refresh();
     } catch {
       setError("Network error. Is the API running?");
     } finally {
@@ -43,76 +45,76 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-8 bg-stone-50">
-      <div className="w-full max-w-sm border border-stone-200 rounded-xl shadow-sm bg-white p-6">
-        <h1 className="text-xl font-bold text-stone-900 mb-4">Register</h1>
+    <main className="min-h-screen flex items-center justify-center p-8 bg-white">
+      <div className="w-full max-w-sm border border-gray-200 rounded-xl shadow-sm bg-white p-6">
+        <h1 className="text-xl font-bold text-gray-900 mb-4">Register</h1>
 
-        <p className="text-stone-600 text-sm mb-3">
+        <p className="text-gray-600 text-sm mb-3">
           Sign in with Google to create your account and access your dashboard.
         </p>
         <div className="mb-4">
           <GoogleSignIn
             text="signup_with"
-            onSuccess={() => { router.push("/dashboard"); router.refresh(); }}
+            onSuccess={() => { if (typeof window !== "undefined") window.location.href = "/dashboard"; }}
             onError={setError}
           />
         </div>
 
         <div className="relative my-4">
-          <span className="block text-center text-stone-400 text-sm">or register with email</span>
+          <span className="block text-center text-gray-400 text-sm">or register with email</span>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Full name</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Full name</label>
             <input
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               required
               minLength={2}
-              className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-tango focus:border-tango"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Email</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               placeholder="your@gmail.com"
-              className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-tango focus:border-tango"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Password</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
-              className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-tango focus:border-tango"
             />
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:opacity-50 font-medium"
+            className="w-full py-2.5 bg-tango text-white rounded-lg hover:bg-tango-dark disabled:opacity-50 font-medium"
           >
             {loading ? "Creating account..." : "Register"}
           </button>
         </form>
-        <p className="mt-4 text-sm text-stone-600">
+        <p className="mt-4 text-sm text-gray-600">
           Already have an account?{" "}
-          <Link href="/login" className="text-teal-600 hover:underline font-medium">
-            Login
+          <Link href="/login" className="text-tango hover:underline font-semibold">
+            Sign In
           </Link>
         </p>
         <p className="mt-2">
-          <Link href="/" className="text-sm text-stone-500 hover:underline">
+          <Link href="/" className="text-sm text-gray-500 hover:underline">
             ← Back to home
           </Link>
         </p>

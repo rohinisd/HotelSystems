@@ -79,51 +79,51 @@ export default function BookPage() {
   }
 
   if (loading || !restaurant) {
-    return <main className="min-h-screen flex items-center justify-center"><p className="text-stone-500">Loading...</p></main>;
+    return <main className="min-h-screen flex items-center justify-center bg-white"><p className="text-gray-500">Loading...</p></main>;
   }
 
-  const primary = restaurant.primary_color || "#0f766e";
+  const primary = restaurant.primary_color || "#EA580C";
 
   if (success) {
     return (
-      <main className="min-h-screen bg-stone-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-xl shadow-lg p-8 max-w-md text-center">
-          <h1 className="text-2xl font-bold text-stone-900">Booking confirmed</h1>
-          <p className="mt-2 text-stone-600">We’ve reserved your table at {restaurant.name}. See you soon!</p>
-          <Link href={`/restaurant/${slug}`} className="inline-block mt-6 px-4 py-2 rounded-lg text-white font-medium" style={{ backgroundColor: primary }}>
+      <main className="min-h-screen bg-white flex items-center justify-center p-4">
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8 max-w-md text-center section-container">
+          <h1 className="text-2xl font-bold text-gray-900">Booking confirmed</h1>
+          <p className="mt-2 text-gray-600">We’ve reserved your table at {restaurant.name}. See you soon!</p>
+          <Link href={`/restaurant/${slug}`} className="inline-block mt-6 px-6 py-3 rounded-lg text-white font-semibold bg-tango hover:bg-tango-dark" style={{ backgroundColor: primary }}>
             Back to {restaurant.name}
           </Link>
-          <Link href="/" className="block mt-3 text-stone-500 text-sm">All restaurants</Link>
+          <Link href="/" className="block mt-3 text-gray-500 text-sm">All restaurants</Link>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-stone-50 py-8">
-      <div className="max-w-lg mx-auto px-4">
-        <Link href={`/restaurant/${slug}`} className="text-stone-500 hover:text-stone-800 text-sm">← {restaurant.name}</Link>
-        <h1 className="text-2xl font-bold text-stone-900 mt-2 mb-6">Book a table</h1>
+    <main className="min-h-screen bg-white py-8">
+      <div className="section-container max-w-lg">
+        <Link href={`/restaurant/${slug}`} className="text-gray-500 hover:text-gray-900 text-sm font-medium">← {restaurant.name}</Link>
+        <h1 className="text-2xl font-bold text-gray-900 mt-2 mb-6">Book a table</h1>
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-stone-200 p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Date</label>
-            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required className="w-full border border-stone-300 rounded-lg px-3 py-2" />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-tango focus:border-tango" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Time</label>
-            <input type="time" value={time} onChange={(e) => setTime(e.target.value)} required className="w-full border border-stone-300 rounded-lg px-3 py-2" />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
+            <input type="time" value={time} onChange={(e) => setTime(e.target.value)} required className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-tango focus:border-tango" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Party size</label>
-            <select value={partySize} onChange={(e) => setPartySize(Number(e.target.value))} className="w-full border border-stone-300 rounded-lg px-3 py-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Party size</label>
+            <select value={partySize} onChange={(e) => setPartySize(Number(e.target.value))} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-tango focus:border-tango">
               {[1,2,3,4,5,6,7,8,9,10].map((n) => <option key={n} value={n}>{n} {n === 1 ? "guest" : "guests"}</option>)}
             </select>
           </div>
           {tables.length > 1 && (
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">Table</label>
-              <select value={tableId ?? ""} onChange={(e) => setTableId(Number(e.target.value))} className="w-full border border-stone-300 rounded-lg px-3 py-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Table</label>
+              <select value={tableId ?? ""} onChange={(e) => setTableId(Number(e.target.value))} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-tango focus:border-tango">
                 {tables.filter((t) => partySize >= t.min_party && partySize <= t.max_party).map((t) => (
                   <option key={t.id} value={t.id}>{t.name} (up to {t.max_party})</option>
                 ))}
@@ -131,23 +131,23 @@ export default function BookPage() {
             </div>
           )}
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Your name</label>
-            <input type="text" value={guestName} onChange={(e) => setGuestName(e.target.value)} required minLength={2} className="w-full border border-stone-300 rounded-lg px-3 py-2" placeholder="Full name" />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Your name</label>
+            <input type="text" value={guestName} onChange={(e) => setGuestName(e.target.value)} required minLength={2} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-tango focus:border-tango" placeholder="Full name" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Email</label>
-            <input type="email" value={guestEmail} onChange={(e) => setGuestEmail(e.target.value)} required className="w-full border border-stone-300 rounded-lg px-3 py-2" placeholder="you@example.com" />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <input type="email" value={guestEmail} onChange={(e) => setGuestEmail(e.target.value)} required className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-tango focus:border-tango" placeholder="you@example.com" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Phone (optional)</label>
-            <input type="tel" value={guestPhone} onChange={(e) => setGuestPhone(e.target.value)} className="w-full border border-stone-300 rounded-lg px-3 py-2" placeholder="+1 234 567 8900" />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Phone (optional)</label>
+            <input type="tel" value={guestPhone} onChange={(e) => setGuestPhone(e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-tango focus:border-tango" placeholder="+1 234 567 8900" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Notes (optional)</label>
-            <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full border border-stone-300 rounded-lg px-3 py-2" placeholder="Dietary requirements, celebration..." />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Notes (optional)</label>
+            <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-tango focus:border-tango" placeholder="Dietary requirements, celebration..." />
           </div>
           {error && <p className="text-red-600 text-sm">{error}</p>}
-          <button type="submit" disabled={submitting} className="w-full py-3 rounded-lg font-semibold text-white disabled:opacity-50" style={{ backgroundColor: primary }}>
+          <button type="submit" disabled={submitting} className="w-full py-3 rounded-lg font-semibold text-white bg-tango hover:bg-tango-dark disabled:opacity-50" style={{ backgroundColor: primary }}>
             {submitting ? "Booking..." : "Confirm reservation"}
           </button>
         </form>

@@ -63,50 +63,50 @@ export default function DashboardPage() {
   }, [me?.restaurant_id]);
 
   if (loading) {
-    return <main className="min-h-screen p-8"><p className="text-stone-500">Loading...</p></main>;
+    return <main className="min-h-screen p-8 bg-white"><p className="text-gray-500">Loading...</p></main>;
   }
 
   return (
-    <main className="min-h-screen bg-stone-50 p-6">
-      <div className="max-w-4xl mx-auto">
+    <main className="min-h-screen bg-white p-6">
+      <div className="section-container max-w-4xl">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-stone-900">Dashboard</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
           <div className="flex gap-3">
-            <Link href="/" className="text-stone-600 hover:text-stone-900 text-sm font-medium">All restaurants</Link>
+            <Link href="/" className="text-gray-600 hover:text-gray-900 text-sm font-medium">All restaurants</Link>
             {me?.restaurant_id && (
-              <Link href="/dashboard/customize" className="px-3 py-1.5 rounded-lg text-sm font-medium bg-teal-600 text-white hover:bg-teal-700">
+              <Link href="/dashboard/customize" className="px-4 py-2 rounded-lg text-sm font-semibold bg-tango text-white hover:bg-tango-dark">
                 Customize my page
               </Link>
             )}
-            <Link href="/login" className="text-stone-600 hover:text-stone-900 text-sm font-medium">Login</Link>
+            <Link href="/login" className="text-gray-600 hover:text-gray-900 text-sm font-medium">Sign In</Link>
           </div>
         </div>
 
         {me?.restaurant_id && (
           <section className="mb-8">
-            <h2 className="text-lg font-semibold text-stone-800 mb-3">Reservations</h2>
+            <h2 className="text-lg font-semibold text-gray-800 mb-3">Reservations</h2>
             {reservations.length === 0 ? (
-              <p className="text-stone-500">No reservations yet.</p>
+              <p className="text-gray-500">No reservations yet.</p>
             ) : (
-              <div className="bg-white rounded-xl border border-stone-200 overflow-hidden">
+              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
                 <table className="w-full">
-                  <thead className="bg-stone-100">
+                  <thead className="bg-gray-50">
                     <tr>
-                      <th className="text-left p-3 text-sm font-medium text-stone-700">Date</th>
-                      <th className="text-left p-3 text-sm font-medium text-stone-700">Time</th>
-                      <th className="text-left p-3 text-sm font-medium text-stone-700">Guest</th>
-                      <th className="text-left p-3 text-sm font-medium text-stone-700">Party</th>
-                      <th className="text-left p-3 text-sm font-medium text-stone-700">Status</th>
+                      <th className="text-left p-3 text-sm font-medium text-gray-700">Date</th>
+                      <th className="text-left p-3 text-sm font-medium text-gray-700">Time</th>
+                      <th className="text-left p-3 text-sm font-medium text-gray-700">Guest</th>
+                      <th className="text-left p-3 text-sm font-medium text-gray-700">Party</th>
+                      <th className="text-left p-3 text-sm font-medium text-gray-700">Status</th>
                     </tr>
                   </thead>
                   <tbody>
                     {reservations.map((r) => (
-                      <tr key={r.id} className="border-t border-stone-100">
-                        <td className="p-3 text-stone-700">{r.reservation_date}</td>
-                        <td className="p-3 text-stone-700">{r.reservation_time}</td>
-                        <td className="p-3 text-stone-700">{r.guest_name}</td>
-                        <td className="p-3 text-stone-700">{r.party_size}</td>
-                        <td className="p-3"><span className="text-teal-600 font-medium">{r.status}</span></td>
+                      <tr key={r.id} className="border-t border-gray-100">
+                        <td className="p-3 text-gray-700">{r.reservation_date}</td>
+                        <td className="p-3 text-gray-700">{r.reservation_time}</td>
+                        <td className="p-3 text-gray-700">{r.guest_name}</td>
+                        <td className="p-3 text-gray-700">{r.party_size}</td>
+                        <td className="p-3"><span className="text-tango font-semibold">{r.status}</span></td>
                       </tr>
                     ))}
                   </tbody>
@@ -117,17 +117,17 @@ export default function DashboardPage() {
         )}
 
         <section>
-          <h2 className="text-lg font-semibold text-stone-800 mb-3">Restaurants</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-3">Restaurants</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             {restaurants.map((r) => (
               <Link
                 key={r.id}
                 href={`/restaurant/${r.slug}`}
-                className="block p-4 bg-white rounded-xl border border-stone-200 hover:border-teal-300 transition"
+                className="block p-4 bg-white rounded-xl border border-gray-200 hover:border-tango/40 transition"
               >
-                <span className="font-medium text-stone-900">{r.name}</span>
-                {r.city && <span className="text-stone-500 text-sm ml-2">({r.city})</span>}
-                {r.tagline && <p className="text-sm text-stone-500 mt-1">{r.tagline}</p>}
+                <span className="font-semibold text-gray-900">{r.name}</span>
+                {r.city && <span className="text-gray-500 text-sm ml-2">({r.city})</span>}
+                {r.tagline && <p className="text-sm text-gray-500 mt-1">{r.tagline}</p>}
               </Link>
             ))}
           </div>

@@ -36,48 +36,52 @@ export default function RestaurantPage() {
       .finally(() => setLoading(false));
   }, [slug]);
 
-  if (loading) return <main className="min-h-screen flex items-center justify-center"><p className="text-stone-500">Loading...</p></main>;
-  if (!restaurant) return <main className="min-h-screen flex items-center justify-center"><p className="text-stone-500">Restaurant not found.</p></main>;
+  if (loading) return <main className="min-h-screen flex items-center justify-center bg-white"><p className="text-gray-500">Loading...</p></main>;
+  if (!restaurant) return <main className="min-h-screen flex items-center justify-center bg-white"><p className="text-gray-500">Restaurant not found.</p></main>;
 
-  const primary = restaurant.primary_color || "#0f766e";
-  const secondary = restaurant.secondary_color || "#134e4a";
+  const primary = restaurant.primary_color || "#EA580C";
+  const secondary = restaurant.secondary_color || "#C2410C";
 
   return (
     <main className="min-h-screen bg-white">
-      <header className="border-b bg-white">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="text-stone-500 hover:text-stone-800 text-sm">← All restaurants</Link>
-          <Link href="/login" className="text-stone-600 text-sm font-medium">Login</Link>
+      <header className="border-b border-gray-100 bg-white sticky top-0 z-10">
+        <div className="section-container py-4 flex justify-between items-center">
+          <Link href="/" className="text-gray-500 hover:text-gray-900 text-sm font-medium">
+            ← All restaurants
+          </Link>
+          <Link href="/login" className="text-gray-600 text-sm font-medium hover:text-gray-900">
+            Sign In
+          </Link>
         </div>
       </header>
 
       <section
-        className="py-16 px-4 text-white"
+        className="py-16 sm:py-20 px-4 text-white"
         style={{ background: `linear-gradient(135deg, ${primary} 0%, ${secondary} 100%)` }}
       >
-        <div className="max-w-4xl mx-auto text-center">
+        <div className="section-container text-center">
           {restaurant.logo_url && (
             <img src={restaurant.logo_url} alt="" className="h-20 w-auto mx-auto mb-4 object-contain" />
           )}
-          <h1 className="text-4xl font-bold">{restaurant.name}</h1>
-          {restaurant.tagline && <p className="mt-2 text-white/90 text-lg">{restaurant.tagline}</p>}
+          <h1 className="text-4xl sm:text-5xl font-bold">{restaurant.name}</h1>
+          {restaurant.tagline && <p className="mt-3 text-white/90 text-lg">{restaurant.tagline}</p>}
           {restaurant.address && <p className="mt-2 text-white/80 text-sm">{restaurant.address}{restaurant.city ? `, ${restaurant.city}` : ""}</p>}
           {restaurant.phone && <p className="mt-1 text-white/80 text-sm">{restaurant.phone}</p>}
           <Link
             href={`/restaurant/${slug}/book`}
-            className="inline-block mt-8 px-6 py-3 bg-white text-stone-900 font-semibold rounded-lg hover:bg-stone-100 transition"
+            className="inline-block mt-8 px-8 py-3 bg-white text-gray-900 font-semibold rounded-lg hover:bg-gray-100 transition shadow-sm"
           >
             Book a table
           </Link>
         </div>
       </section>
 
-      <section className="max-w-4xl mx-auto px-4 py-12">
-        <p className="text-stone-600 text-center">Choose your date and time to make a reservation.</p>
-        <div className="text-center mt-6">
+      <section className="section-container py-16">
+        <p className="text-gray-500 text-center mb-8">Choose your date and time to make a reservation.</p>
+        <div className="text-center">
           <Link
             href={`/restaurant/${slug}/book`}
-            className="inline-block px-6 py-3 rounded-lg font-medium text-white hover:opacity-90 transition"
+            className="inline-block px-8 py-3 rounded-lg font-semibold text-white hover:opacity-90 transition bg-tango"
             style={{ backgroundColor: primary }}
           >
             Book a table

@@ -30,58 +30,74 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-stone-50">
-      <header className="border-b bg-white/80 backdrop-blur">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
-          <span className="text-xl font-semibold text-stone-800">TableBook</span>
-          <div className="flex gap-3">
-            <Link href="/login" className="text-stone-600 hover:text-stone-900 text-sm font-medium">
-              Login
+    <main className="min-h-screen bg-white">
+      <header className="border-b border-gray-100 bg-white sticky top-0 z-10">
+        <div className="section-container py-4 flex justify-between items-center">
+          <Link href="/" className="text-xl font-bold text-gray-900">
+            TableBook
+          </Link>
+          <nav className="flex gap-6">
+            <Link href="/login" className="text-gray-600 hover:text-gray-900 text-sm font-medium">
+              Sign In
             </Link>
-            <Link href="/register" className="text-stone-600 hover:text-stone-900 text-sm font-medium">
+            <Link
+              href="/register"
+              className="bg-tango text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-tango-dark transition"
+            >
               Register
             </Link>
-          </div>
+          </nav>
         </div>
       </header>
 
-      <section className="max-w-5xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold text-stone-900 mb-2">Find a restaurant</h1>
-        <p className="text-stone-600 mb-8">Book a table at your favourite place.</p>
+      <section className="section-container py-16 sm:py-20 md:py-24">
+        <div className="text-center max-w-2xl mx-auto">
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+            Book a table at your favourite place
+          </h1>
+          <p className="text-gray-500 text-lg">
+            Authentic flavors, easy reservations. Find a restaurant and reserve in a few clicks.
+          </p>
+        </div>
+      </section>
 
+      <section className="section-container pb-20">
+        <h2 className="text-xl font-semibold text-gray-900 mb-6">Find a restaurant</h2>
         {loading ? (
-          <p className="text-stone-500">Loading restaurants...</p>
+          <p className="text-gray-500">Loading restaurants...</p>
         ) : restaurants.length === 0 ? (
-          <p className="text-stone-500">No restaurants yet.</p>
+          <p className="text-gray-500">No restaurants yet.</p>
         ) : (
-          <div className="grid gap-6 sm:grid-cols-2">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {restaurants.map((r) => (
               <Link
                 key={r.id}
                 href={`/restaurant/${r.slug}`}
-                className="block rounded-xl overflow-hidden border border-stone-200 bg-white shadow-sm hover:shadow-md transition"
+                className="block rounded-xl overflow-hidden border border-gray-200 bg-white shadow-sm hover:shadow-md hover:border-tango/30 transition"
               >
                 {r.cover_image_url ? (
-                  <div className="aspect-[2/1] bg-stone-200">
+                  <div className="aspect-[2/1] bg-gray-100">
                     <img src={r.cover_image_url} alt="" className="w-full h-full object-cover" />
                   </div>
                 ) : (
                   <div
                     className="aspect-[2/1] flex items-center justify-center"
-                    style={{ backgroundColor: r.primary_color || "#0f766e", color: "#fff" }}
+                    style={{ backgroundColor: r.primary_color || "#EA580C", color: "#fff" }}
                   >
                     {r.logo_url ? (
                       <img src={r.logo_url} alt="" className="h-16 w-auto object-contain" />
                     ) : (
-                      <span className="text-2xl font-bold">{r.name.charAt(0)}</span>
+                      <span className="text-3xl font-bold">{r.name.charAt(0)}</span>
                     )}
                   </div>
                 )}
                 <div className="p-4">
-                  <h2 className="font-semibold text-stone-900">{r.name}</h2>
-                  {r.tagline && <p className="text-sm text-stone-500 mt-1">{r.tagline}</p>}
-                  {r.city && <p className="text-sm text-stone-400 mt-1">{r.city}</p>}
-                  <span className="inline-block mt-2 text-sm font-medium" style={{ color: r.primary_color || "#0f766e" }}>
+                  <h3 className="font-semibold text-gray-900">{r.name}</h3>
+                  {r.tagline && <p className="text-sm text-gray-500 mt-1">{r.tagline}</p>}
+                  {r.city && <p className="text-sm text-gray-400 mt-1">{r.city}</p>}
+                  <span
+                    className="inline-block mt-3 text-sm font-semibold text-tango hover:underline"
+                  >
                     Book a table →
                   </span>
                 </div>
@@ -90,6 +106,12 @@ export default function Home() {
           </div>
         )}
       </section>
+
+      <footer className="border-t border-gray-100 py-8 mt-auto">
+        <div className="section-container text-center text-gray-500 text-sm">
+          TableBook – Restaurant table booking. Sign in to manage your reservations.
+        </div>
+      </footer>
     </main>
   );
 }

@@ -7,7 +7,18 @@ const config: Config = {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        tango: "#EA580C", // Meghana-style primary orange
+        "tango-dark": "#C2410C",
+      },
+      fontFamily: {
+        sans: ["var(--font-dm-sans)", "system-ui", "sans-serif"],
+      },
+      maxWidth: {
+        "section": "1200px",
+      },
+    },
   },
   plugins: [],
 };
