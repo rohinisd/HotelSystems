@@ -18,6 +18,19 @@ docker compose up -d --build
 
 Database is seeded with one hotel, five rooms, and one user (see [db/seed.sql](db/seed.sql)). Use **Register** in the UI to create an account.
 
+### Local frontend dev (Google Sign-In button)
+
+If you run the frontend with `npm run dev` (e.g. `http://localhost:3000`) and the **Google button is missing** on Login/Register, set the Client ID for local dev:
+
+```bash
+cd frontend
+cp .env.example .env.local
+# Edit .env.local if needed (it already has the project's Google Client ID)
+npm run dev
+```
+
+Restart the dev server after creating `.env.local`. See [REFERENCE.md](REFERENCE.md) §5b for Google OAuth setup.
+
 ## Docs
 
 | Doc | Purpose |
